@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" ?>
+<Application Title="NonPersistentObjectsDemo">
+  <Options>
+    <LayoutManagerOptions RequiredFieldMark="*" />
+  </Options>
+  <Views>
+    <DetailView Id="Project_DetailView">
+      <Layout>
+        <LayoutGroup Id="Main">
+          <LayoutGroup Id="Features" Index="1" IsNewNode="True">
+            <LayoutItem Id="Features" ViewItem="Features" ShowCaption="False" Index="0" IsNewNode="True" />
+          </LayoutGroup>
+          <LayoutGroup Id="Resources" Index="2" IsNewNode="True">
+            <LayoutItem Id="Resources" ViewItem="Resources" ShowCaption="False" Index="0" IsNewNode="True" />
+          </LayoutGroup>
+          <TabbedGroup Id="Tabs" Removed="True">
+            <LayoutGroup Id="Features" Removed="True" />
+            <LayoutGroup Id="Resources" Removed="True" />
+          </TabbedGroup>
+        </LayoutGroup>
+      </Layout>
+    </DetailView>
+    <ListView Id="Project_Features_ListView" AllowEdit="True" />
+    <ListView Id="Project_Resources_ListView" MasterDetailMode="ListViewAndDetailView">
+      <Columns>
+        <ColumnInfo Id="URI" Index="-1" />
+        <ColumnInfo Id="Name" SortIndex="-1" SortOrder="None" />
+        <ColumnInfo Id="Priority" SortIndex="0" SortOrder="Ascending" Index="1" />
+        <ColumnInfo Id="Embed" Index="2" />
+      </Columns>
+      <SplitLayout SplitterPosition="400" />
+    </ListView>
+  </Views>
+</Application>
