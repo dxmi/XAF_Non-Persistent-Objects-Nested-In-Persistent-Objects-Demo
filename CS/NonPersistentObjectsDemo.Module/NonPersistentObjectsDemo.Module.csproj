@@ -138,9 +138,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessObjects\DemoData.cs" />
+    <Compile Include="BusinessObjects\Feature.cs" />
+    <Compile Include="BusinessObjects\Group.cs" />
     <Compile Include="BusinessObjects\NonPersistentObjectBase.cs" />
     <Compile Include="BusinessObjects\NonPersistentObjects.cs" />
     <Compile Include="BusinessObjects\PersistentObjects.cs" />
+    <Compile Include="BusinessObjects\Resource.cs" />
     <Compile Include="Controllers\MyController.cs" />
     <Compile Include="Controllers\NonPersistentObjectActivatorController.cs">
       <SubType>Component</SubType>

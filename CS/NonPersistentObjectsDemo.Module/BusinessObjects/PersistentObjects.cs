@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using DevExpress.Data.Filtering;
+using DevExpress.ExpressApp;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Xpo;
@@ -15,7 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DevExpress.ExpressApp.DC.XafDefaultProperty(nameof(CodeName))]
     [DefaultClassOptions]
-    public class Project : BaseObject {
+    public class Project : BaseObject, IObjectSpaceLink {
         public Project(Session session) : base(session) { }
 
         private string _CodeName;
@@ -40,6 +41,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         //    get { return Session.Query<Project>().GroupBy(o => o.GroupName).Select(o => new Group() { Name = o.Key }).ToList(); }
         //}
         private BindingList<Feature> _Features;
+        [Aggregated]
         public IList<Feature> Features {
             get {
                 if(_Features == null) {
@@ -75,6 +77,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             set { SetPropertyValue<string>(nameof(KillerFeatureName), ref _KillerFeatureName, value); }
         }
         private BindingList<Resource> _Resources;
+        [Aggregated]
         public IList<Resource> Resources {
             get {
                 if(_Resources == null) {
@@ -108,7 +111,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         protected override void OnLoaded() {
             base.OnLoaded();
-            Group = GroupName == null ? null : new Group() { Name = GroupName };
+            Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
             Load(Features, FeatureList, ref Feature.Sequence);
             Load(Resources, ResourceList, ref Resource.Sequence);
             KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
@@ -118,14 +121,31 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             ResourceList = Save(Resources);
             base.OnSaving();
         }
+        private IObjectSpace objectSpace;
+        protected IObjectSpace ObjectSpace { get { return objectSpace; } }
+        IObjectSpace IObjectSpaceLink.ObjectSpace {
+            get { return objectSpace; }
+            set {
+                if(objectSpace != value) {
+                    //OnObjectSpaceChanging();
+                    objectSpace = value;
+                    //OnObjectSpaceChanged();
+                }
+            }
+        }
+
+        #region NP Serialization
         private void Load<T>(IList<T> list, string data, ref int sequence) where T : NonPersistentObjectBaseWithKey {
             list.Clear();
             if(data == null) return;
+            var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
+            var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
             var serializer = new XmlSerializer(typeof(T).MakeArrayType());
             using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
                 var objs = serializer.Deserialize(stream) as IList<T>;
                 foreach(var obj in objs) {
                     obj.ID = ++sequence;
+                    ObjectSpace.GetObject(obj);
                     list.Add(obj);
                 }
             }
@@ -140,6 +160,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
+        #endregion
     }
 
 }
