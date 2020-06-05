@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0"?>
 <Application>
-  <Options CollectionsEditMode="Edit" />
+  <BOModel>
+    <Class Name="NonPersistentObjectsDemo.Module.BusinessObjects.Project">
+      <OwnMembers>
+        <Member Name="Group" PropertyEditorType="DevExpress.ExpressApp.Web.Editors.ASPx.ASPxGridLookupPropertyEditor" />
+      </OwnMembers>
+    </Class>
+  </BOModel>  <Options CollectionsEditMode="Edit" />
   <ViewItems>
     <PropertyEditor Name="PropertyEditors">
       <RegisteredPropertyEditor PropertyType="System.Drawing.Color" EditorType="DevExpress.ExpressApp.Web.Editors.ASPx.ASPxColorPickerPropertyEditor" />

@@ -4,6 +4,11 @@
     <LayoutManagerOptions RequiredFieldMark="*" />
   </Options>
   <Views>
+    <ListView Id="Group_LookupListView">
+      <Columns>
+        <ColumnInfo Id="Name" Index="0" />
+      </Columns>
+    </ListView>
     <DetailView Id="Project_DetailView">
       <Layout>
         <LayoutGroup Id="Main">

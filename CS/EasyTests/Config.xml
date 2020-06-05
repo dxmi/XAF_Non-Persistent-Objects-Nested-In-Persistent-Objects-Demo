@@ -2,16 +2,18 @@
 <Options xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" TestRunTimeLimit="3">
   <Applications>
     <Application
-			Name="NonPersistentObjectsDemoWin"
-			FileName="[ConfigPath]\..\NonPersistentObjectsDemo.Win\Bin\EasyTest\NonPersistentObjectsDemo.Win.exe"
+      Name="NonPersistentObjectsDemoWin"
+      FileName="[ConfigPath]\..\NonPersistentObjectsDemo.Win\Bin\EasyTest\NonPersistentObjectsDemo.Win.exe"
       AdapterFileName="[WinAdapterFileName]"
-			CommunicationPort="4100"/>
+      CommunicationPort="4100"/>
     <Application
-			Name="NonPersistentObjectsDemoWeb"
-			Url="http://localhost:4030"
-			PhysicalPath="[ConfigPath]\..\NonPersistentObjectsDemo.Web"
+      Name="NonPersistentObjectsDemoWeb"
+      UseIISExpress="true"
+      Url="http://localhost:42164/"
+      PhysicalPath="[ConfigPath]\..\NonPersistentObjectsDemo.Web"
       AdapterFileName="[WebAdapterFileName]"
-      IgnoreCase="true"/>
+      IgnoreCase="true"
+      />
   </Applications>
   <Aliases>
     <Alias Name="RootUrl" Value="http://localhost:" />

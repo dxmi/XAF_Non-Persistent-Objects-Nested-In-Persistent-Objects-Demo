@@ -37,9 +37,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
     }
 
     [DomainComponent]
+    [DefaultProperty(nameof(Name))]
     public class Group : NonPersistentObjectBase {
-
         private string _Name;
+        [DevExpress.ExpressApp.Data.Key]
         public string Name {
             get { return _Name; }
             set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
