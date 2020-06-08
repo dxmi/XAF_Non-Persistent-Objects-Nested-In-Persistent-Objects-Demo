@@ -16,7 +16,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EasyTests", "EasyTests", "{4E356507-F6A1-48D3-A65F-A8DF1B77AA54}"
 	ProjectSection(SolutionItems) = preProject
 		EasyTests\Config.xml = EasyTests\Config.xml
-		EasyTests\TestCreateDelete.ets = EasyTests\TestCreateDelete.ets
+		EasyTests\TestCreateDeleteWin.ets = EasyTests\TestCreateDeleteWin.ets
+		EasyTests\TestCreateDeleteWeb.ets = EasyTests\TestCreateDeleteWeb.ets
 	EndProjectSection
 EndProject
 Global
