@@ -64,5 +64,13 @@ namespace NonPersistentObjectsDemo.Win {
             }
 #endif
         }
+        public override IObjectSpace GetObjectSpaceToShowDetailViewFrom(Frame sourceFrame, Type objectType, TargetWindow targetWindow) {
+            if(sourceFrame.View is ListView &&
+                sourceFrame.View.ObjectTypeInfo.Type == typeof(Module.BusinessObjects.Agent) &&
+                objectType == typeof(Module.BusinessObjects.Agent)) {
+                return sourceFrame.View.ObjectSpace;
+            }
+            return base.GetObjectSpaceToShowDetailViewFrom(sourceFrame, objectType, targetWindow);
+        }
     }
 }

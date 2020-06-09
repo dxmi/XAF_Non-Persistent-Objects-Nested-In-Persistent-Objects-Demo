@@ -137,6 +137,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessObjects\Agent.cs" />
     <Compile Include="BusinessObjects\DemoData.cs" />
     <Compile Include="BusinessObjects\Feature.cs" />
     <Compile Include="BusinessObjects\Group.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="BusinessObjects\NonPersistentObjects.cs" />
     <Compile Include="BusinessObjects\PersistentObjects.cs" />
     <Compile Include="BusinessObjects\Resource.cs" />
+    <Compile Include="BusinessObjects\Technology.cs" />
     <Compile Include="Controllers\MyController.cs" />
     <Compile Include="Controllers\NonPersistentObjectActivatorController.cs">
       <SubType>Component</SubType>

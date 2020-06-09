@@ -12,11 +12,17 @@
     <DetailView Id="Project_DetailView">
       <Layout>
         <LayoutGroup Id="Main">
-          <LayoutGroup Id="Features" Index="1" IsNewNode="True">
-            <LayoutItem Id="Features" ViewItem="Features" ShowCaption="False" Index="0" IsNewNode="True" />
+          <LayoutGroup Id="Features" ShowCaption="True" Index="1" IsNewNode="True">
+            <LayoutItem Id="Features" ViewItem="Features" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
           </LayoutGroup>
-          <LayoutGroup Id="Resources" Index="2" IsNewNode="True">
-            <LayoutItem Id="Resources" ViewItem="Resources" ShowCaption="False" Index="0" IsNewNode="True" />
+          <LayoutGroup Id="Resources" ShowCaption="True" Index="2" IsNewNode="True">
+            <LayoutItem Id="Resources" ViewItem="Resources" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
+          </LayoutGroup>
+          <LayoutGroup Id="Agents" ShowCaption="True" Index="3" IsNewNode="True">
+            <LayoutItem Id="Agents" ViewItem="Agents" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
+          </LayoutGroup>
+          <LayoutGroup Id="Technologies" ShowCaption="True" Index="4" IsNewNode="True">
+            <LayoutItem Id="Technologies" ViewItem="Technologies" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
           </LayoutGroup>
           <TabbedGroup Id="Tabs" Removed="True">
             <LayoutGroup Id="Features" Removed="True" />
@@ -33,7 +39,7 @@
         <ColumnInfo Id="Priority" SortIndex="0" SortOrder="Ascending" Index="1" />
         <ColumnInfo Id="Embed" Index="2" />
       </Columns>
-      <SplitLayout SplitterPosition="400" />
+      <SplitLayout SplitterPosition="300" />
     </ListView>
   </Views>
 </Application>

@@ -41,8 +41,11 @@ namespace NonPersistentObjectsDemo.Module {
         private void Application_ObjectSpaceCreated(object sender, ObjectSpaceCreatedEventArgs e) {
             var cos = e.ObjectSpace as CompositeObjectSpace;
             if(cos != null) {
+                if(!(cos.Owner is CompositeObjectSpace)) {
                 cos.PopulateAdditionalObjectSpaces((XafApplication)sender);
                 cos.AutoCommitAdditionalObjectSpaces = true;
+            }
+                cos.ObjectChanged += Cos_ObjectChanged;
             }
             var npos = e.ObjectSpace as NonPersistentObjectSpace;
             if(npos != null) {
@@ -52,7 +55,8 @@ namespace NonPersistentObjectsDemo.Module {
                 new NPGroupAdapter(npos);
                 new NPFeatureAdapter(npos);
                 new NPResourceAdapter(npos);
-                new NPAdapter(npos);
+                new NPAgentAdapter(npos);
+                new NPTechnologyAdapter(npos);
             }
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {
