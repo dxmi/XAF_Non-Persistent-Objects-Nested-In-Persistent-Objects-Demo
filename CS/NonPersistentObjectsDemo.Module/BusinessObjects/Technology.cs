@@ -111,7 +111,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 var tobj = (Technology)e.SourceObject;
                 Technology objData;
                 if(!storage.TryGetValue(tobj.Oid, out objData)) {
-                    throw new InvalidOperationException("Object not found in the storage.");
+                    throw new InvalidOperationException("Object is not found in the storage.");
                 }
                 Copy(objData, tobj);
                 e.TargetObject = tobj;
@@ -132,7 +132,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     }
                     else {
                         if(!storage.TryGetValue(tobj.Oid, out objData)) {
-                            throw new InvalidOperationException("Object not found in the storage.");
+                            throw new InvalidOperationException("Object is not found in the storage.");
                         }
                         Copy(tobj, objData);
                     }

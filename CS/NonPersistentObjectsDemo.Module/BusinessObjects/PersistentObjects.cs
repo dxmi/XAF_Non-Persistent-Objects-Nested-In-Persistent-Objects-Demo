@@ -56,7 +56,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void _Features_ListChanged(object sender, ListChangedEventArgs e) {
             var list = (BindingList<Feature>)sender;
             if(e.ListChangedType == ListChangedType.ItemAdded) {
-                list[e.NewIndex].ID = ++Feature.Sequence;
+                var obj = list[e.NewIndex];
+                obj.OwnerKey = this.Oid;
+                obj.LocalKey = e.NewIndex + 1;
             }
         }
         private string _FeatureList;
@@ -173,11 +175,11 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         protected override void OnLoaded() {
             base.OnLoaded();
-            Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
-            Load(Features, FeatureList, ref Feature.Sequence);
-            Load(Resources, ResourceList, ref Resource.Sequence);
-            KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
-            Load(Agents, AgentList, ref Agent.Sequence);
+            _Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
+            Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; });
+            Load(Resources, ResourceList, o => { o.ID = ++Resource.Sequence; });
+            _KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
+            Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
             Load(Technologies, TechnologyList);
         }
         protected override void OnSaving() {
@@ -193,26 +195,23 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return objectSpace; }
             set {
                 if(objectSpace != value) {
-                    //OnObjectSpaceChanging();
                     objectSpace = value;
-                    //OnObjectSpaceChanged();
                 }
             }
         }
 
         #region NP Serialization
-        private void Load<T>(IList<T> list, string data, ref int sequence) where T : NonPersistentObjectBaseWithKey {
+        private void Load<T>(IList<T> list, string data, Action<T> acceptor) {
             list.Clear();
             if(data == null) return;
-            var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
-            var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
+            //var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
+            //var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
             var serializer = new XmlSerializer(typeof(T).MakeArrayType());
             using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
                 var objs = serializer.Deserialize(stream) as IList<T>;
                 foreach(var obj in objs) {
-                    obj.ID = ++sequence;
-                    ObjectSpace.GetObject(obj);
-                    list.Add(obj);
+                    acceptor?.Invoke(obj);
+                    list.Add(ObjectSpace.GetObject(obj));
                 }
             }
         }

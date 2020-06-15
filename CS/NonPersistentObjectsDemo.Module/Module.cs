@@ -44,8 +44,9 @@ namespace NonPersistentObjectsDemo.Module {
                 if(!(cos.Owner is CompositeObjectSpace)) {
                 cos.PopulateAdditionalObjectSpaces((XafApplication)sender);
                 cos.AutoCommitAdditionalObjectSpaces = true;
+                    cos.AutoRefreshAdditionalObjectSpaces = true;
             }
-                cos.ObjectChanged += Cos_ObjectChanged;
+                //cos.ObjectChanged += Cos_ObjectChanged;
             }
             var npos = e.ObjectSpace as NonPersistentObjectSpace;
             if(npos != null) {
