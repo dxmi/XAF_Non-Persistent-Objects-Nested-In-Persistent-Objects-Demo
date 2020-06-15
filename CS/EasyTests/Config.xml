@@ -17,7 +17,7 @@
   </Applications>
   <Aliases>
     <Alias Name="RootUrl" Value="http://localhost:" />
-    <Alias Name="Version" Value="20.1" />
+    <Alias Name="Version" Value="20.2" />
 
     <Alias Name="DBServerName" Value="(localdb)\mssqllocaldb" />
 
