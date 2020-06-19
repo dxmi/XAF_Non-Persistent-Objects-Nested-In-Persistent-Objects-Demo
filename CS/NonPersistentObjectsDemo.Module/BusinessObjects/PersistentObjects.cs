@@ -44,7 +44,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         #region Features
         private BindingList<Feature> _Features;
         [Aggregated]
-        public IList<Feature> Features {
+        public BindingList<Feature> Features {
             get {
                 if(_Features == null) {
                     _Features = new BindingList<Feature>();
@@ -60,6 +60,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 obj.OwnerKey = this.Oid;
                 obj.LocalKey = e.NewIndex + 1;
             }
+            FeatureList = Save(Features);
         }
         private string _FeatureList;
         [Browsable(false)]
@@ -86,7 +87,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         #region Resources
         private BindingList<Resource> _Resources;
         [Aggregated]
-        public IList<Resource> Resources {
+        public BindingList<Resource> Resources {
             get {
                 if(_Resources == null) {
                     _Resources = new BindingList<Resource>();
@@ -100,6 +101,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             if(e.ListChangedType == ListChangedType.ItemAdded) {
                 list[e.NewIndex].ID = ++Resource.Sequence;
             }
+            ResourceList = Save(Resources);
         }
         private string _ResourceList;
         [Browsable(false)]
@@ -113,7 +115,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         #region Agents
         private BindingList<Agent> _Agents;
         [Aggregated]
-        public IList<Agent> Agents {
+        public BindingList<Agent> Agents {
             get {
                 if(_Agents == null) {
                     _Agents = new BindingList<Agent>();
@@ -127,6 +129,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             if(e.ListChangedType == ListChangedType.ItemAdded) {
                 list[e.NewIndex].ID = ++Agent.Sequence;
             }
+            AgentList = Save(Agents);
         }
         private string _AgentList;
         [Browsable(false)]
@@ -140,7 +143,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         #region Technologies
         private BindingList<Technology> _Technologies;
         //[Aggregated]
-        public IList<Technology> Technologies {
+        public BindingList<Technology> Technologies {
             get {
                 if(_Technologies == null) {
                     _Technologies = new BindingList<Technology>();
@@ -172,6 +175,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             else if(propertyName == nameof(KillerFeature)) {
                 KillerFeatureName = (newValue as Feature)?.Name;
             }
+            else if(propertyName == nameof(FeatureList)) {
+                //Load(Features, FeatureList, o => { o.OwnerKey = this.Oid; });
+            }
         }
         protected override void OnLoaded() {
             base.OnLoaded();
@@ -201,19 +207,28 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
 
         #region NP Serialization
-        private void Load<T>(IList<T> list, string data, Action<T> acceptor) {
+        private void Load<T>(BindingList<T> list, string data, Action<T> acceptor) {
+            list.RaiseListChangedEvents = false;
             list.Clear();
-            if(data == null) return;
-            //var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
-            //var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
-            var serializer = new XmlSerializer(typeof(T).MakeArrayType());
-            using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
-                var objs = serializer.Deserialize(stream) as IList<T>;
-                foreach(var obj in objs) {
-                    acceptor?.Invoke(obj);
-                    list.Add(ObjectSpace.GetObject(obj));
+            if(data != null) {
+                //var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
+                //var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
+                var serializer = new XmlSerializer(typeof(T).MakeArrayType());
+                using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
+                    var objs = serializer.Deserialize(stream) as IList<T>;
+                    foreach(var obj in objs) {
+                        acceptor?.Invoke(obj);
+                        var tobj = ObjectSpace.GetObject(obj);
+                        var aobj = tobj as IAssignable<T>;
+                        if(aobj!= null) {
+                            aobj.Assign(obj); // always?
+                        }
+                        list.Add(tobj);
+                    }
                 }
             }
+            list.RaiseListChangedEvents = true;
+            list.ResetBindings();
         }
         private string Save<T>(IList<T> list) {
             if(list == null || list.Count == 0) {
@@ -227,14 +242,14 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         private void Load(IList<Technology> list, string data) {
             list.Clear();
-            if(data == null)
-                return;
-            foreach(var s in data.Split(',')) {
-                Guid key;
-                if(Guid.TryParse(s, out key)) {
-                    var obj = ObjectSpace.GetObjectByKey<Technology>(key);
-                    if(obj != null) {
-                        list.Add(obj);
+            if(data != null) {
+                foreach(var s in data.Split(',')) {
+                    Guid key;
+                    if(Guid.TryParse(s, out key)) {
+                        var obj = ObjectSpace.GetObjectByKey<Technology>(key);
+                        if(obj != null) {
+                            list.Add(obj);
+                        }
                     }
                 }
             }

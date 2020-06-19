@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
     [ListViewFilter("None", "1=0")]
     [ListViewFilter("Started", "Progress > 0")]
     [DomainComponent]
-    public class Feature : NonPersistentObjectBase {
+    public class Feature : NonPersistentObjectBase, IAssignable<Feature> {
         //public static int Sequence;
         public Feature() : base() { }
         [Browsable(false)]
@@ -38,6 +38,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return _Progress; }
             set { SetPropertyValue<double>(nameof(Progress), ref _Progress, value); }
         }
+        public void Assign(Feature source) {
+            OwnerKey = source.OwnerKey;
+            LocalKey = source.LocalKey;
+            Name = source.Name;
+            Progress = source.Progress;
+    }
     }
 
     class NPFeatureAdapter {
@@ -71,20 +77,24 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 Guid ownerKey;
                 int localKey;
                 if(!TryParseKey(key, out ownerKey, out localKey)) {
-                    throw new InvalidOperationException("Object is not found in the storage.");
+                    throw new InvalidOperationException("Invalid key.");
                 }
-                var owner = objectSpace.GetObjectByKey<Project>(ownerKey);
+                var owner = GetOwnerByKey(ownerKey);
                 if(owner == null) {
-                    throw new InvalidOperationException("Object is not found in the storage.");
+                    throw new InvalidOperationException("Owner object is not found in the storage.");
                 }
                 result = owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
                 if(result == null) {
-                    throw new InvalidOperationException("Object is not found in the storage.");
+                    return null;
+                    //throw new InvalidOperationException("Object is not found in the storage.");
                 }
                 AcceptObject(result);
-                throw new NotSupportedException();
             }
             return result;
+        }
+        private Project GetOwnerByKey(Guid key) {
+            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
+            return (ownerObjectSpace ?? objectSpace).GetObjectByKey<Project>(key);
         }
         private bool TryParseKey(string key, out Guid ownerKey, out int localKey) {
             ownerKey = Guid.Empty;
@@ -135,7 +145,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
                         // then refresh contents of the found object and return it.
                         if(result != obj) {
-                            Copy(obj, result);
+                            result.Assign(obj);
                         }
                         e.TargetObject = result;
                     }
@@ -163,7 +173,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                                 // if objectMap contains an object with the same key, assume SourceObject is an outdated copy.
                                 // then return the cached object. (???)
                                 if(result != obj) {
-                                    Copy(obj, result);
+                                    result.Assign(obj);
                                 }
                                 e.TargetObject = result;
                             }
@@ -173,29 +183,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         }
                     }
                 }
-                //if(link.ObjectSpace == null || link.ObjectSpace == objectSpace) {
-                //    AcceptObject(obj);
-                //    return;
-                //}
-                //if(link.ObjectSpace.IsNewObject(obj)) { // implement in OS?
-                //    e.TargetObject = null;
-                //    return;
-                //}
-                //e.TargetObject = GetObject(obj.ID);
-                //Feature result;
-                //if(!objectMap.TryGetValue(obj.ID, out result)) {
-                //    result = new Feature();
-                //    Copy(obj, result);
-                //    AcceptObject(result);
-                //}
-                //e.TargetObject = result;
-            }
         }
-        private void Copy(Feature source, Feature target) {
-            target.OwnerKey = source.OwnerKey;
-            target.LocalKey = source.LocalKey;
-            target.Name = source.Name;
-            target.Progress = source.Progress;
         }
     }
 }

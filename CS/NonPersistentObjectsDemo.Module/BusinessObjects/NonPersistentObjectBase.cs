@@ -10,7 +10,6 @@ using DevExpress.Persistent.Base;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
-
     public abstract class NonPersistentObjectBase : INotifyPropertyChanged, IObjectSpaceLink {
         private IObjectSpace objectSpace;
         protected IObjectSpace ObjectSpace { get { return objectSpace; } }
@@ -41,5 +40,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         [Browsable(false)]
         public object This { get { return this; } }
+    }
+
+    public interface IAssignable<T> {
+        void Assign(T source);
     }
 }
