@@ -9,7 +9,7 @@ using DevExpress.ExpressApp.DC;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Resource : NonPersistentObjectBaseWithKey {
+    public class Resource : NonPersistentObjectBaseWithKey, IAssignable<Resource> {
         public static int Sequence;
         private string _Name;
         public string Name {
@@ -31,6 +31,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return _Embed; }
             set { SetPropertyValue<bool>(nameof(Embed), ref _Embed, value); }
         }
+        public void Assign(Resource source) {
+            ID = source.ID;
+            Name = source.Name;
+            URI = source.URI;
+            Priority = source.Priority;
+            Embed = source.Embed;
+        }
     }
 
     class NPResourceAdapter {
@@ -45,11 +52,21 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             objectSpace.Reloaded += ObjectSpace_Reloaded;
             objectMap = new Dictionary<int, Resource>();
         }
+        private void AcceptObject(Resource obj) {
+            Resource result;
+            if(!objectMap.TryGetValue(obj.ID, out result)) {
+                objectMap.Add(obj.ID, obj);
+            }
+            else {
+                if(result != obj) {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
         private Resource GetObject(int key) {
             Resource result;
             if(!objectMap.TryGetValue(key, out result)) {
-                throw new NotImplementedException();
-                objectMap.Add(key, result);
+                throw new NotSupportedException();
             }
             return result;
         }
@@ -71,8 +88,67 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
             var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is Resource) {
-                //throw new NotImplementedException();
+                var obj = (Resource)e.SourceObject;
+                if(link.ObjectSpace == null) {
+                    //AcceptObject(obj);
+                    Resource result;
+                    if(obj.ID == 0)
+                        throw new InvalidOperationException(); // DEBUG
+                    if(!objectMap.TryGetValue(obj.ID, out result)) {
+                        objectMap.Add(obj.ID, obj);
+                        e.TargetObject = obj;
+                    }
+                    else {
+                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
+                        // then refresh contents of the found object and return it.
+                        if(result != obj) {
+                            result.Assign(obj);
+                        }
+                        e.TargetObject = result;
+                    }
+                }
+                else {
+                    if(link.ObjectSpace.IsNewObject(obj)) {
+                        if(link.ObjectSpace == objectSpace) {
+                            e.TargetObject = e.SourceObject;
+                        }
+                        else {
+                            e.TargetObject = null;
+                        }
+                    }
+                    else {
+                        if(link.ObjectSpace == objectSpace) {
+                            //AcceptObject(obj);
+                            Resource result;
+                            if(obj.ID == 0)
+                                throw new InvalidOperationException(); // DEBUG
+                            if(!objectMap.TryGetValue(obj.ID, out result)) {
+                                objectMap.Add(obj.ID, obj);
+                                e.TargetObject = obj;
+                            }
+                            else {
+                                // if objectMap contains an object with the same key, assume SourceObject is an outdated copy.
+                                // then return the cached object. (???)
+                                if(result != obj) {
+                                    result.Assign(obj);
+                                }
+                                e.TargetObject = result;
+                            }
+                        }
+                        else {
+                            Resource result;
+                            if(!objectMap.TryGetValue(obj.ID, out result)) {
+                                result = new Resource();
+                                result.Assign(obj);
+                                objectMap.Add(obj.ID, result);
+                            }
+                            e.TargetObject = result;
+                        }
+                    }
+                }
             }
         }
+
     }
+
 }
