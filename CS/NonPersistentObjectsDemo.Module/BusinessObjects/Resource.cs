@@ -1,16 +1,23 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.DC;
+using DevExpress.Persistent.Base;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Resource : NonPersistentObjectBaseWithKey, IAssignable<Resource> {
-        public static int Sequence;
+    public class Resource : NonPersistentObjectBase, IAssignable<Resource> {
+        //[Browsable(false)]
+        [VisibleInDetailView(false)]
+        [VisibleInListView(false)]
+        [DevExpress.ExpressApp.Data.Key]
+        public Guid ID { get; set; }
         private string _Name;
         public string Name {
             get { return _Name; }
@@ -31,18 +38,25 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return _Embed; }
             set { SetPropertyValue<bool>(nameof(Embed), ref _Embed, value); }
         }
+        [Browsable(false)]
+        [XmlIgnore]
+        public Guid OwnerKey { get; set; }
         public void Assign(Resource source) {
             ID = source.ID;
+            OwnerKey = source.OwnerKey;
             Name = source.Name;
             URI = source.URI;
             Priority = source.Priority;
             Embed = source.Embed;
         }
+        public Resource() {
+            ID = Guid.NewGuid();
+        }
     }
 
     class NPResourceAdapter {
         private NonPersistentObjectSpace objectSpace;
-        private Dictionary<int, Resource> objectMap;
+        private Dictionary<Guid, Resource> objectMap;
 
         public NPResourceAdapter(NonPersistentObjectSpace npos) {
             this.objectSpace = npos;
@@ -50,10 +64,17 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
             objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
             objectSpace.Reloaded += ObjectSpace_Reloaded;
-            objectMap = new Dictionary<int, Resource>();
+            objectMap = new Dictionary<Guid, Resource>();
+        }
+        void GuardKeyNotEmpty(Resource obj) {
+            if(obj.OwnerKey == Guid.Empty)
+                throw new InvalidOperationException(); // DEBUG
+            if(obj.ID == Guid.Empty)
+                throw new InvalidOperationException(); // DEBUG
         }
         private void AcceptObject(Resource obj) {
             Resource result;
+            GuardKeyNotEmpty(obj);
             if(!objectMap.TryGetValue(obj.ID, out result)) {
                 objectMap.Add(obj.ID, obj);
             }
@@ -63,17 +84,25 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
             }
         }
-        private Resource GetObject(int key) {
+        private Resource GetObject(Guid key) {
             Resource result;
             if(!objectMap.TryGetValue(key, out result)) {
                 throw new NotSupportedException();
             }
             return result;
         }
+        private Project GetOwnerByKey(Guid key) {
+            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
+            return (ownerObjectSpace ?? objectSpace).GetObjectByKey<Project>(key);
+        }
+        private Project ReloadOwner(Project owner) {
+            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
+            return (Project)(ownerObjectSpace ?? objectSpace).ReloadObject(owner);
+        }
         private void ObjectSpace_ObjectByKeyGetting(object sender, ObjectByKeyGettingEventArgs e) {
             if(e.Key != null) {
                 if(e.ObjectType == typeof(Resource)) {
-                    e.Object = GetObject((int)e.Key);
+                    e.Object = GetObject((Guid)e.Key);
                 }
             }
         }
@@ -89,11 +118,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is Resource) {
                 var obj = (Resource)e.SourceObject;
+                GuardKeyNotEmpty(obj);
                 if(link.ObjectSpace == null) {
                     //AcceptObject(obj);
                     Resource result;
-                    if(obj.ID == 0)
-                        throw new InvalidOperationException(); // DEBUG
                     if(!objectMap.TryGetValue(obj.ID, out result)) {
                         objectMap.Add(obj.ID, obj);
                         e.TargetObject = obj;
@@ -120,8 +148,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         if(link.ObjectSpace == objectSpace) {
                             //AcceptObject(obj);
                             Resource result;
-                            if(obj.ID == 0)
-                                throw new InvalidOperationException(); // DEBUG
                             if(!objectMap.TryGetValue(obj.ID, out result)) {
                                 objectMap.Add(obj.ID, obj);
                                 e.TargetObject = obj;
@@ -138,9 +164,24 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         else {
                             Resource result;
                             if(!objectMap.TryGetValue(obj.ID, out result)) {
-                                result = new Resource();
-                                result.Assign(obj);
-                                objectMap.Add(obj.ID, result);
+                                var owner = GetOwnerByKey(obj.OwnerKey);
+                                if(owner == null) {
+                                    throw new InvalidOperationException("Owner object is not found in the storage.");
+                                }
+                                result = owner.Resources.FirstOrDefault(o => o.ID == obj.ID);
+                                if(result != null) {
+                                    AcceptObject(result);
+                                }
+                                else {
+                                    owner = ReloadOwner(owner);
+                                    if(owner == null) {
+                                        throw new InvalidOperationException("Owner object is not found in the storage.");
+                                    }
+                                    result = owner.Resources.FirstOrDefault(o => o.ID == obj.ID);
+                                    if(result != null) {
+                                        AcceptObject(result);
+                                    }
+                                }
                             }
                             e.TargetObject = result;
                         }

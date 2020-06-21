@@ -99,7 +99,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void _Resources_ListChanged(object sender, ListChangedEventArgs e) {
             var list = (BindingList<Resource>)sender;
             if(e.ListChangedType == ListChangedType.ItemAdded) {
-                list[e.NewIndex].ID = ++Resource.Sequence;
+                list[e.NewIndex].OwnerKey = this.Oid;
             }
             ResourceList = Save(Resources);
         }
@@ -183,7 +183,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             base.OnLoaded();
             _Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
             Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; });
-            Load(Resources, ResourceList, o => { o.ID = ++Resource.Sequence; });
+            Load(Resources, ResourceList, o => { o.OwnerKey = this.Oid; });
             _KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
             Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
             Load(Technologies, TechnologyList);
