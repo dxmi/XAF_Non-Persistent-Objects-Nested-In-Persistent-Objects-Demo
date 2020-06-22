@@ -11,11 +11,13 @@
 *FillForm
  Name = Feature1
  Progress = 2
+*ActionAvailable Save
 *Action Save and Close
 *Action Features.New
 *FillForm
  Name = Feature2
  Progress = 1
+*ActionAvailable Save
 *Action Save and Close
 *Action Save
 *OptionalAction Close
@@ -43,6 +45,7 @@
  Resources.URI = aaa
  Resources.Priority = 1
  Resources.Embed = True
+*ActionAvailable Save
 *Action Resources.New
 ;*ClearSelection Resources
 ;*SelectRecords Resources

@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EasyTests", "EasyTests", "{
 		EasyTests\Config.xml = EasyTests\Config.xml
 		EasyTests\TestCreateDeleteWin.ets = EasyTests\TestCreateDeleteWin.ets
 		EasyTests\TestCreateDeleteWeb.ets = EasyTests\TestCreateDeleteWeb.ets
+		EasyTests\TestEditWin.ets = EasyTests\TestEditWin.ets
+		EasyTests\TestEditWeb.ets = EasyTests\TestEditWeb.ets
 	EndProjectSection
 EndProject
 Global
