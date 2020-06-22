@@ -20,6 +20,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         //public static int Sequence;
         public Feature() : base() { }
         [Browsable(false)]
+        [XmlIgnore]
         public int LocalKey { get; set; }
         [Browsable(false)]
         [XmlIgnore]

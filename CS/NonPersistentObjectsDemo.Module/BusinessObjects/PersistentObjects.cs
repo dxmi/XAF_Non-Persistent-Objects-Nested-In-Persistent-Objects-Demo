@@ -174,7 +174,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         protected override void OnLoaded() {
             base.OnLoaded();
             _Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
-            Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; });
+            int counter = 0;
+            Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; o.LocalKey = ++counter; });
             Load(Resources, ResourceList, o => { o.OwnerKey = this.Oid; });
             _KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
             Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
