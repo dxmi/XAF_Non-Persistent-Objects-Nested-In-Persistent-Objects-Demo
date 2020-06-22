@@ -90,10 +90,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     throw new InvalidOperationException("Owner object is not found in the storage.");
                 }
                 result = owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
-                if(result == null) {
-                    return null;
+                if(result != null) {
+                    AcceptObject(result);
                 }
-                AcceptObject(result);
             }
             return result;
         }
@@ -171,8 +170,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                                 e.TargetObject = obj;
                             }
                             else {
-                                // if objectMap contains an object with the same key, assume SourceObject is an outdated copy.
-                                // then return the cached object. (???)
+                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
+                                // then refresh contents of the found object and return it.
                                 if(result != obj) {
                                     result.Assign(obj);
                                 }
@@ -184,7 +183,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         }
                     }
                 }
-        }
+            }
         }
     }
 }

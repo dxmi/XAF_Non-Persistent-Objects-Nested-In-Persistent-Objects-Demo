@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -153,8 +153,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                                 e.TargetObject = obj;
                             }
                             else {
-                                // if objectMap contains an object with the same key, assume SourceObject is an outdated copy.
-                                // then return the cached object. (???)
+                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
+                                // then refresh contents of the found object and return it.
                                 if(result != obj) {
                                     result.Assign(obj);
                                 }
@@ -165,22 +165,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                             Resource result;
                             if(!objectMap.TryGetValue(obj.ID, out result)) {
                                 var owner = GetOwnerByKey(obj.OwnerKey);
-                                if(owner == null) {
-                                    throw new InvalidOperationException("Owner object is not found in the storage.");
+                                result = GetFromOwner(owner, obj.ID);
+                                if(result == null) {
+                                    owner = ReloadOwner(owner);
+                                    result = GetFromOwner(owner, obj.ID);
                                 }
-                                result = owner.Resources.FirstOrDefault(o => o.ID == obj.ID);
                                 if(result != null) {
                                     AcceptObject(result);
-                                }
-                                else {
-                                    owner = ReloadOwner(owner);
-                                    if(owner == null) {
-                                        throw new InvalidOperationException("Owner object is not found in the storage.");
-                                    }
-                                    result = owner.Resources.FirstOrDefault(o => o.ID == obj.ID);
-                                    if(result != null) {
-                                        AcceptObject(result);
-                                    }
                                 }
                             }
                             e.TargetObject = result;
@@ -189,7 +180,11 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
             }
         }
-
+        private Resource GetFromOwner(Project owner, Guid localKey) {
+            if(owner == null) {
+                throw new InvalidOperationException("Owner object is not found in the storage.");
+            }
+            return owner.Resources.FirstOrDefault(o => o.ID == localKey);
+        }
     }
-
 }
