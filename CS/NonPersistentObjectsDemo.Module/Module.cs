@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Linq;
 using DevExpress.ExpressApp;
@@ -42,16 +42,13 @@ namespace NonPersistentObjectsDemo.Module {
             var cos = e.ObjectSpace as CompositeObjectSpace;
             if(cos != null) {
                 if(!(cos.Owner is CompositeObjectSpace)) {
-                cos.PopulateAdditionalObjectSpaces((XafApplication)sender);
-                cos.AutoCommitAdditionalObjectSpaces = true;
+                    cos.PopulateAdditionalObjectSpaces((XafApplication)sender);
+                    cos.AutoCommitAdditionalObjectSpaces = true;
                     cos.AutoRefreshAdditionalObjectSpaces = true;
-            }
-                //cos.ObjectChanged += Cos_ObjectChanged;
+                }
             }
             var npos = e.ObjectSpace as NonPersistentObjectSpace;
             if(npos != null) {
-                //npos.AutoRefreshAdditionalObjectSpaces = true;
-                //npos.AutoCommitAdditionalObjectSpaces = true;
                 npos.AutoSetModifiedOnObjectChange = true;
                 new NPGroupAdapter(npos);
                 new NPFeatureAdapter(npos);

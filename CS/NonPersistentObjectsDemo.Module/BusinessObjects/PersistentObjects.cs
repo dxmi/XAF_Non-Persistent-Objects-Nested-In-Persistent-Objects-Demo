@@ -25,7 +25,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             set { SetPropertyValue<string>(nameof(CodeName), ref _CodeName, value); }
         }
         private Group _Group;
-        //[DataSourceProperty(nameof(AllGroups))]
         public Group Group {
             get { return _Group; }
             set { SetPropertyValue<Group>(nameof(Group), ref _Group, value); }
@@ -36,10 +35,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return _GroupName; }
             set { SetPropertyValue<string>(nameof(GroupName), ref _GroupName, value); }
         }
-        //[Browsable(false)]
-        //public IList<Group> AllGroups {
-        //    get { return Session.Query<Project>().GroupBy(o => o.GroupName).Select(o => new Group() { Name = o.Key }).ToList(); }
-        //}
 
         #region Features
         private BindingList<Feature> _Features;
@@ -175,9 +170,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             else if(propertyName == nameof(KillerFeature)) {
                 KillerFeatureName = (newValue as Feature)?.Name;
             }
-            else if(propertyName == nameof(FeatureList)) {
-                //Load(Features, FeatureList, o => { o.OwnerKey = this.Oid; });
-            }
         }
         protected override void OnLoaded() {
             base.OnLoaded();
@@ -211,8 +203,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             list.RaiseListChangedEvents = false;
             list.Clear();
             if(data != null) {
-                //var objectSpace = (CompositeObjectSpace)BaseObjectSpace.FindObjectSpaceByObject(this);
-                //var itsObjectSpace = objectSpace.FindAdditionalObjectSpace(typeof(T));
                 var serializer = new XmlSerializer(typeof(T).MakeArrayType());
                 using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
                     var objs = serializer.Deserialize(stream) as IList<T>;

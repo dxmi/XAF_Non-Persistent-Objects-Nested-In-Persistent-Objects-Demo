@@ -39,7 +39,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void AcceptObject(Agent obj) {
             Agent result;
             if(!objectMap.TryGetValue(obj.ID, out result)) {
-                ((IObjectSpaceLink)obj).ObjectSpace = objectSpace; // remove?
                 objectMap.Add(obj.ID, obj);
             }
             else {
@@ -51,8 +50,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private Agent GetObject(int key) {
             Agent result;
             if(!objectMap.TryGetValue(key, out result)) {
-                //result = new Feature();
-                //features.Add(key, result);
                 throw new NotSupportedException();
             }
             return result;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -58,11 +58,16 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             objectSpace.Reloaded += ObjectSpace_Reloaded;
             objectMap = new Dictionary<string, Feature>();
         }
+        void GuardKeyNotEmpty(Feature obj) {
+            if(obj.OwnerKey == Guid.Empty)
+                throw new InvalidOperationException(); // DEBUG
+            if(obj.LocalKey == 0)
+                throw new InvalidOperationException(); // DEBUG
+        }
         private void AcceptObject(Feature obj) {
             Feature result;
-            if(obj.OwnerKey == Guid.Empty) throw new InvalidOperationException(); // DEBUG
+            GuardKeyNotEmpty(obj);
             if(!objectMap.TryGetValue(obj.ID, out result)) {
-                //((IObjectSpaceLink)obj).ObjectSpace = objectSpace; // remove?
                 objectMap.Add(obj.ID, obj);
             }
             else {
@@ -86,7 +91,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 result = owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
                 if(result == null) {
                     return null;
-                    //throw new InvalidOperationException("Object is not found in the storage.");
                 }
                 AcceptObject(result);
             }
@@ -133,10 +137,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is Feature) {
                 var obj = (Feature)e.SourceObject;
+                GuardKeyNotEmpty(obj);
                 if(link.ObjectSpace == null) {
-                    //AcceptObject(obj);
                     Feature result;
-                    if(obj.OwnerKey == Guid.Empty) throw new InvalidOperationException(); // DEBUG
                     if(!objectMap.TryGetValue(obj.ID, out result)) {
                         objectMap.Add(obj.ID, obj);
                         e.TargetObject = obj;
@@ -161,10 +164,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     }
                     else {
                         if(link.ObjectSpace == objectSpace) {
-                            //AcceptObject(obj);
                             Feature result;
-                            if(obj.OwnerKey == Guid.Empty)
-                                throw new InvalidOperationException(); // DEBUG
                             if(!objectMap.TryGetValue(obj.ID, out result)) {
                                 objectMap.Add(obj.ID, obj);
                                 e.TargetObject = obj;
