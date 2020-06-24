@@ -11,7 +11,7 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Technology : NonPersistentObjectBase {
+    public class Technology : NonPersistentObjectBase, IAssignable<Technology> {
         [VisibleInDetailView(false)]
         [VisibleInListView(false)]
         [DevExpress.ExpressApp.Data.Key]
@@ -29,6 +29,11 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         public string Description {
             get { return _Description; }
             set { SetPropertyValue<string>(nameof(Description), ref _Description, value); }
+        }
+        public void Assign(Technology source) {
+            Oid = source.Oid;
+            Name = source.Name;
+            Description = source.Description;
         }
     }
 
@@ -70,7 +75,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 Technology objData;
                 if(storage.TryGetValue(key, out objData)) {
                     result = new Technology();
-                    Copy(objData, result);
+                    result.Assign(objData);
                     AcceptObject(result);
                 }
             }
@@ -95,15 +100,51 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is Technology) {
                 var obj = (Technology)e.SourceObject;
-                if(link.ObjectSpace == null || link.ObjectSpace == objectSpace) {
-                    AcceptObject(obj);
-                    return;
+                if(link.ObjectSpace == null) {
+                    Technology result;
+                    if(!objectMap.TryGetValue(obj.Oid, out result)) {
+                        objectMap.Add(obj.Oid, obj);
+                        e.TargetObject = obj;
+                    }
+                    else {
+                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
+                        // then refresh contents of the found object and return it.
+                        if(result != obj) {
+                            result.Assign(obj);
+                        }
+                        e.TargetObject = result;
+                    }
                 }
-                if(link.ObjectSpace.IsNewObject(obj)) { // implement in OS?
-                    e.TargetObject = null;
-                    return;
+                else {
+                    if(link.ObjectSpace.IsNewObject(obj)) {
+                        if(link.ObjectSpace == objectSpace) {
+                            e.TargetObject = e.SourceObject;
+                        }
+                        else {
+                            e.TargetObject = null;
+                        }
+                    }
+                    else {
+                        if(link.ObjectSpace == objectSpace) {
+                            Technology result;
+                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
+                                objectMap.Add(obj.Oid, obj);
+                                e.TargetObject = obj;
+                            }
+                            else {
+                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
+                                // then refresh contents of the found object and return it.
+                                if(result != obj) {
+                                    result.Assign(obj);
+                                }
+                                e.TargetObject = result;
+                            }
+                        }
+                        else {
+                            e.TargetObject = GetObject(obj.Oid);
+                        }
+                    }
                 }
-                e.TargetObject = GetObject(obj.Oid);
             }
         }
         private void ObjectSpace_ObjectReloading(object sender, ObjectGettingEventArgs e) {
@@ -113,7 +154,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 if(!storage.TryGetValue(tobj.Oid, out objData)) {
                     throw new InvalidOperationException("Object is not found in the storage.");
                 }
-                Copy(objData, tobj);
+                tobj.Assign(objData);
                 e.TargetObject = tobj;
             }
         }
@@ -127,22 +168,17 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     }
                     else if(objectSpace.IsNewObject(obj)) {
                         objData = new Technology();
-                        Copy(tobj, objData);
+                        objData.Assign(tobj);
                         storage.Add(tobj.Oid, objData);
                     }
                     else {
                         if(!storage.TryGetValue(tobj.Oid, out objData)) {
                             throw new InvalidOperationException("Object is not found in the storage.");
                         }
-                        Copy(tobj, objData);
+                        objData.Assign(tobj);
                     }
                 }
             }
-        }
-        private void Copy(Technology source, Technology target) {
-            target.Oid = source.Oid;
-            target.Name = source.Name;
-            target.Description = source.Description;
         }
     }
 }
