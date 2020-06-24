@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -86,19 +86,33 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     throw new InvalidOperationException("Invalid key.");
                 }
                 var owner = GetOwnerByKey(ownerKey);
-                if(owner == null) {
-                    throw new InvalidOperationException("Owner object is not found in the storage.");
+                result = GetFromOwner(owner, localKey);
+                if(result == null) {
+                    owner = ReloadOwner(owner);
+                    result = GetFromOwner(owner, localKey);
                 }
-                result = owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
                 if(result != null) {
                     AcceptObject(result);
                 }
             }
             return result;
         }
+        private Feature GetFromOwner(Project owner, int localKey) {
+            if(owner == null) {
+                throw new InvalidOperationException("Owner object is not found in the storage.");
+            }
+            return owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
+        }
         private Project GetOwnerByKey(Guid key) {
             var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
             return (ownerObjectSpace ?? objectSpace).GetObjectByKey<Project>(key);
+        }
+        private Project ReloadOwner(Project owner) {
+            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
+            if(ownerObjectSpace.ModifiedObjects.Contains(owner)) {
+                throw new NotSupportedException();
+            }
+            return (Project)(ownerObjectSpace ?? objectSpace).ReloadObject(owner);
         }
         private bool TryParseKey(string key, out Guid ownerKey, out int localKey) {
             ownerKey = Guid.Empty;

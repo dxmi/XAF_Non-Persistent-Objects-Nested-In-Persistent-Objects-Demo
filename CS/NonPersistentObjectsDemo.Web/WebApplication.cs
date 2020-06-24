@@ -96,6 +96,19 @@ namespace NonPersistentObjectsDemo.Web {
             }
 #endif
         }
+        public override IObjectSpace GetObjectSpaceToShowDetailViewFrom(Frame sourceFrame, Type objectType, TargetWindow targetWindow) {
+            if(sourceFrame.View is ListView &&
+                sourceFrame.View.ObjectTypeInfo.Type == typeof(Module.BusinessObjects.Agent) &&
+                objectType == typeof(Module.BusinessObjects.Agent)) {
+                return sourceFrame.View.ObjectSpace;
+            }
+            if(sourceFrame.View is ListView &&
+                sourceFrame.View.ObjectTypeInfo.Type == typeof(Module.BusinessObjects.Group) &&
+                objectType == typeof(Module.BusinessObjects.Group)) {
+                return sourceFrame.View.ObjectSpace;
+            }
+            return base.GetObjectSpaceToShowDetailViewFrom(sourceFrame, objectType, targetWindow);
+        }
         private void InitializeComponent() {
             this.module1 = new DevExpress.ExpressApp.SystemModule.SystemModule();
             this.module2 = new DevExpress.ExpressApp.Web.SystemModule.SystemAspNetModule();

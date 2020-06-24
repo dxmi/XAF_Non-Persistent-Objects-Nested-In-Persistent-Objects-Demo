@@ -60,7 +60,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void AcceptObject(Technology obj) {
             Technology result;
             if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                ((IObjectSpaceLink)obj).ObjectSpace = objectSpace; // remove?
                 objectMap.Add(obj.Oid, obj);
             }
             else {

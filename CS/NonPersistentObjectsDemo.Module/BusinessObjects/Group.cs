@@ -59,9 +59,34 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             objectMap.Clear();
         }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            //var link = e.SourceObject as IObjectSpaceLink;
+            var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is Group) {
-                e.TargetObject = GetObject(((Group)e.SourceObject).Name);
+                var obj = (Group)e.SourceObject;
+                if(link.ObjectSpace == null) {
+                    if(obj.Name != null) {
+                        Group result;
+                        if(!objectMap.TryGetValue(obj.Name, out result)) {
+                            result = new Group() { Name = obj.Name };
+                            objectMap.Add(obj.Name, result);
+                        }
+                        e.TargetObject = result;
+                    }
+                }
+                else {
+                    if(link.ObjectSpace == objectSpace) {
+                        if(!link.ObjectSpace.IsNewObject(obj)) {
+                            e.TargetObject = GetObject(obj.Name);
+                        }
+                    }
+                    else {
+                        if(link.ObjectSpace.IsNewObject(obj)) {
+                            e.TargetObject = null;
+                        }
+                        else {
+                            e.TargetObject = GetObject(((Group)e.SourceObject).Name);
+                        }
+                    }
+                }
             }
         }
     }
