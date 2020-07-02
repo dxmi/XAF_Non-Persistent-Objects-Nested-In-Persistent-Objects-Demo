@@ -11,7 +11,7 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Technology : NonPersistentObjectBase, IAssignable<Technology> {
+    public class Technology : NonPersistentObjectImpl, IAssignable<Technology> {
         [VisibleInDetailView(false)]
         [VisibleInListView(false)]
         [DevExpress.ExpressApp.Data.Key]
@@ -22,13 +22,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private string _Name;
         public string Name {
             get { return _Name; }
-            set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
+            set { SetPropertyValue<string>(ref _Name, value); }
         }
         private string _Description;
         [FieldSize(FieldSizeAttribute.Unlimited)]
         public string Description {
             get { return _Description; }
-            set { SetPropertyValue<string>(nameof(Description), ref _Description, value); }
+            set { SetPropertyValue<string>(ref _Description, value); }
         }
         public void Assign(Technology source) {
             Oid = source.Oid;

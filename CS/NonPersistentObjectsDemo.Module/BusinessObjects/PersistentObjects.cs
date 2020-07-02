@@ -48,12 +48,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 return _Features;
             }
         }
+        private int FeatureSequence = 0;
         private void _Features_ListChanged(object sender, ListChangedEventArgs e) {
             var list = (BindingList<Feature>)sender;
             if(e.ListChangedType == ListChangedType.ItemAdded) {
                 var obj = list[e.NewIndex];
                 obj.OwnerKey = this.Oid;
-                obj.LocalKey = e.NewIndex + 1;
+                obj.LocalKey = ++FeatureSequence;
             }
             FeatureList = Save(Features);
         }

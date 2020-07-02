@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,8 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
     [ListViewFilter("None", "1=0")]
     [ListViewFilter("Started", "Progress > 0")]
     [DomainComponent]
-    public class Feature : NonPersistentObjectBase, IAssignable<Feature> {
-        //public static int Sequence;
+    public class Feature : NonPersistentObjectImpl, IAssignable<Feature> {
         public Feature() : base() { }
         [Browsable(false)]
         [XmlIgnore]
@@ -32,12 +31,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private string _Name;
         public string Name {
             get { return _Name; }
-            set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
+            set { SetPropertyValue<string>(ref _Name, value); }
         }
         private double _Progress;
         public double Progress {
             get { return _Progress; }
-            set { SetPropertyValue<double>(nameof(Progress), ref _Progress, value); }
+            set { SetPropertyValue<double>(ref _Progress, value); }
         }
         public void Assign(Feature source) {
             OwnerKey = source.OwnerKey;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -141,7 +141,6 @@
     <Compile Include="BusinessObjects\DemoData.cs" />
     <Compile Include="BusinessObjects\Feature.cs" />
     <Compile Include="BusinessObjects\Group.cs" />
-    <Compile Include="BusinessObjects\NonPersistentObjectBase.cs" />
     <Compile Include="BusinessObjects\NonPersistentObjects.cs" />
     <Compile Include="BusinessObjects\PersistentObjects.cs" />
     <Compile Include="BusinessObjects\Resource.cs" />

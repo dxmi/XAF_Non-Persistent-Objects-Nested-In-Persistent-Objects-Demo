@@ -3,24 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.DC;
+using DevExpress.Persistent.Base;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Agent : NonPersistentObjectBaseWithKey {
+    public class Agent : NonPersistentObjectImpl {
         public static int Sequence;
         public Agent() : base() { }
+        [VisibleInDetailView(false)]
+        [VisibleInListView(false)]
+        [XmlIgnore]
+        [DevExpress.ExpressApp.Data.Key]
+        public int ID { get; set; }
         private string _Name;
         public string Name {
             get { return _Name; }
-            set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
+            set { SetPropertyValue<string>(ref _Name, value); }
         }
         private double _Progress;
         public double Progress {
             get { return _Progress; }
-            set { SetPropertyValue<double>(nameof(Progress), ref _Progress, value); }
+            set { SetPropertyValue<double>(ref _Progress, value); }
         }
     }
 

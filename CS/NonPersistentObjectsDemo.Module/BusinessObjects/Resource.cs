@@ -12,37 +12,36 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Resource : NonPersistentObjectBase, IAssignable<Resource> {
-        //[Browsable(false)]
+    public class Resource : NonPersistentObjectImpl, IAssignable<Resource> {
         [VisibleInDetailView(false)]
         [VisibleInListView(false)]
         [DevExpress.ExpressApp.Data.Key]
-        public Guid ID { get; set; }
+        public Guid Oid { get; set; }
         private string _Name;
         public string Name {
             get { return _Name; }
-            set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
+            set { SetPropertyValue<string>(ref _Name, value); }
         }
         private string _URI;
         public string URI {
             get { return _URI; }
-            set { SetPropertyValue<string>(nameof(URI), ref _URI, value); }
+            set { SetPropertyValue<string>(ref _URI, value); }
         }
         private int _Priority;
         public int Priority {
             get { return _Priority; }
-            set { SetPropertyValue<int>(nameof(Priority), ref _Priority, value); }
+            set { SetPropertyValue<int>(ref _Priority, value); }
         }
         private bool _Embed;
         public bool Embed {
             get { return _Embed; }
-            set { SetPropertyValue<bool>(nameof(Embed), ref _Embed, value); }
+            set { SetPropertyValue<bool>(ref _Embed, value); }
         }
         [Browsable(false)]
         [XmlIgnore]
         public Guid OwnerKey { get; set; }
         public void Assign(Resource source) {
-            ID = source.ID;
+            Oid = source.Oid;
             OwnerKey = source.OwnerKey;
             Name = source.Name;
             URI = source.URI;
@@ -50,7 +49,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             Embed = source.Embed;
         }
         public Resource() {
-            ID = Guid.NewGuid();
+            Oid = Guid.NewGuid();
         }
     }
 
@@ -69,14 +68,14 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         void GuardKeyNotEmpty(Resource obj) {
             if(obj.OwnerKey == Guid.Empty)
                 throw new InvalidOperationException(); // DEBUG
-            if(obj.ID == Guid.Empty)
+            if(obj.Oid == Guid.Empty)
                 throw new InvalidOperationException(); // DEBUG
         }
         private void AcceptObject(Resource obj) {
             Resource result;
             GuardKeyNotEmpty(obj);
-            if(!objectMap.TryGetValue(obj.ID, out result)) {
-                objectMap.Add(obj.ID, obj);
+            if(!objectMap.TryGetValue(obj.Oid, out result)) {
+                objectMap.Add(obj.Oid, obj);
             }
             else {
                 if(result != obj) {
@@ -122,8 +121,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 if(link.ObjectSpace == null) {
                     //AcceptObject(obj);
                     Resource result;
-                    if(!objectMap.TryGetValue(obj.ID, out result)) {
-                        objectMap.Add(obj.ID, obj);
+                    if(!objectMap.TryGetValue(obj.Oid, out result)) {
+                        objectMap.Add(obj.Oid, obj);
                         e.TargetObject = obj;
                     }
                     else {
@@ -148,8 +147,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         if(link.ObjectSpace == objectSpace) {
                             //AcceptObject(obj);
                             Resource result;
-                            if(!objectMap.TryGetValue(obj.ID, out result)) {
-                                objectMap.Add(obj.ID, obj);
+                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
+                                objectMap.Add(obj.Oid, obj);
                                 e.TargetObject = obj;
                             }
                             else {
@@ -163,12 +162,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         }
                         else {
                             Resource result;
-                            if(!objectMap.TryGetValue(obj.ID, out result)) {
+                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
                                 var owner = GetOwnerByKey(obj.OwnerKey);
-                                result = GetFromOwner(owner, obj.ID);
+                                result = GetFromOwner(owner, obj.Oid);
                                 if(result == null) {
                                     owner = ReloadOwner(owner);
-                                    result = GetFromOwner(owner, obj.ID);
+                                    result = GetFromOwner(owner, obj.Oid);
                                 }
                                 if(result != null) {
                                     AcceptObject(result);
@@ -184,7 +183,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             if(owner == null) {
                 throw new InvalidOperationException("Owner object is not found in the storage.");
             }
-            return owner.Resources.FirstOrDefault(o => o.ID == localKey);
+            return owner.Resources.FirstOrDefault(o => o.Oid == localKey);
         }
     }
 }
