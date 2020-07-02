@@ -11,14 +11,9 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
-    public class Technology : NonPersistentObjectImpl, IAssignable<Technology> {
-        [VisibleInDetailView(false)]
-        [VisibleInListView(false)]
-        [DevExpress.ExpressApp.Data.Key]
-        public Guid Oid { get; set; }
-        public Technology() : base() {
-            Oid = Guid.NewGuid();
-        }
+    public class Technology : NonPersistentBaseObject, IAssignable<Technology> {
+        public Technology() : base() { }
+        public Technology(Guid oid) : base(oid) { }
         private string _Name;
         public string Name {
             get { return _Name; }
@@ -31,7 +26,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             set { SetPropertyValue<string>(ref _Description, value); }
         }
         public void Assign(Technology source) {
-            Oid = source.Oid;
             Name = source.Name;
             Description = source.Description;
         }
@@ -73,7 +67,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             if(!objectMap.TryGetValue(key, out result)) {
                 Technology objData;
                 if(storage.TryGetValue(key, out objData)) {
-                    result = new Technology();
+                    result = new Technology(key);
                     result.Assign(objData);
                     AcceptObject(result);
                 }
@@ -166,7 +160,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                         storage.Remove(tobj.Oid);
                     }
                     else if(objectSpace.IsNewObject(obj)) {
-                        objData = new Technology();
+                        objData = new Technology(tobj.Oid);
                         objData.Assign(tobj);
                         storage.Add(tobj.Oid, objData);
                     }
