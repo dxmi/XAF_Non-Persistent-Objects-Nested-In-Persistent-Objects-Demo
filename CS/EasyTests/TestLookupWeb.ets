@@ -7,14 +7,14 @@
  Columns = Code Name
  Row = Project X
 *Action Edit
-*ExecuteEditorAction Killer Feature(New)
+*ExecuteEditorAction Main Feature(New)
 *FillForm
  Name = F10
  Progress = 10
 *Action OK
 
 *CheckFieldValues
- Killer Feature = F10
+ Main Feature = F10
 
 *Action Save
 *Action Navigation(Default.Project)
@@ -22,7 +22,7 @@
  Code Name = Project X
 
 *CheckFieldValues
- Killer Feature = F10
+ Main Feature = F10
 
 *CheckTable Features
  RowCount = 1
