@@ -66,17 +66,17 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         #endregion
 
-        private Feature _KillerFeature;
+        private Feature _MainFeature;
         [DataSourceProperty(nameof(Features))]
-        public Feature KillerFeature {
-            get { return _KillerFeature; }
-            set { SetPropertyValue<Feature>(nameof(KillerFeature), ref _KillerFeature, value); }
+        public Feature MainFeature {
+            get { return _MainFeature; }
+            set { SetPropertyValue<Feature>(nameof(MainFeature), ref _MainFeature, value); }
         }
-        private string _KillerFeatureName;
+        private string _MainFeatureName;
         [Browsable(false)]
-        public string KillerFeatureName {
-            get { return _KillerFeatureName; }
-            set { SetPropertyValue<string>(nameof(KillerFeatureName), ref _KillerFeatureName, value); }
+        public string MainFeatureName {
+            get { return _MainFeatureName; }
+            set { SetPropertyValue<string>(nameof(MainFeatureName), ref _MainFeatureName, value); }
         }
 
         #region Resources
@@ -167,8 +167,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             if(propertyName == nameof(Group)) {
                 GroupName = (newValue as Group)?.Name;
             }
-            else if(propertyName == nameof(KillerFeature)) {
-                KillerFeatureName = (newValue as Feature)?.Name;
+            else if(propertyName == nameof(MainFeature)) {
+                MainFeatureName = (newValue as Feature)?.Name;
             }
         }
         protected override void OnLoaded() {
@@ -177,7 +177,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             int counter = 0;
             Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; o.LocalKey = ++counter; });
             Load(Resources, ResourceList, o => { o.OwnerKey = this.Oid; });
-            _KillerFeature = KillerFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == KillerFeatureName);
+            _MainFeature = MainFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == MainFeatureName);
             Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
             Load(Technologies, TechnologyList);
         }
