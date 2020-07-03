@@ -107,61 +107,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         #endregion
 
-        #region Agents
-        private BindingList<Agent> _Agents;
-        [Aggregated]
-        public BindingList<Agent> Agents {
-            get {
-                if(_Agents == null) {
-                    _Agents = new BindingList<Agent>();
-                    _Agents.ListChanged += _Agents_ListChanged;
-                }
-                return _Agents;
-            }
-        }
-        private void _Agents_ListChanged(object sender, ListChangedEventArgs e) {
-            var list = (BindingList<Agent>)sender;
-            if(e.ListChangedType == ListChangedType.ItemAdded) {
-                list[e.NewIndex].ID = ++Agent.Sequence;
-            }
-            AgentList = Save(Agents);
-        }
-        private string _AgentList;
-        [Browsable(false)]
-        [Size(SizeAttribute.Unlimited)]
-        public string AgentList {
-            get { return _AgentList; }
-            set { SetPropertyValue<string>(nameof(AgentList), ref _AgentList, value); }
-        }
-        #endregion
-
-        #region Technologies
-        private BindingList<Technology> _Technologies;
-        //[Aggregated]
-        public BindingList<Technology> Technologies {
-            get {
-                if(_Technologies == null) {
-                    _Technologies = new BindingList<Technology>();
-                    //_Technologies.ListChanged += _Technologies_ListChanged;
-                }
-                return _Technologies;
-            }
-        }
-        //private void _Technologies_ListChanged(object sender, ListChangedEventArgs e) {
-        //    var list = (BindingList<Technology>)sender;
-        //    if(e.ListChangedType == ListChangedType.ItemAdded) {
-        //        list[e.NewIndex].ID = ++Technology.Sequence;
-        //    }
-        //}
-        private string _TechnologyList;
-        [Browsable(false)]
-        [Size(SizeAttribute.Unlimited)]
-        public string TechnologyList {
-            get { return _TechnologyList; }
-            set { SetPropertyValue<string>(nameof(TechnologyList), ref _TechnologyList, value); }
-        }
-        #endregion
-
         protected override void OnChanged(string propertyName, object oldValue, object newValue) {
             base.OnChanged(propertyName, oldValue, newValue);
             if(propertyName == nameof(Group)) {
@@ -178,14 +123,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             Load(Features, FeatureList, o=> { o.OwnerKey = this.Oid; o.LocalKey = ++counter; });
             Load(Resources, ResourceList, o => { o.OwnerKey = this.Oid; });
             _MainFeature = MainFeatureName == null ? null : Features.FirstOrDefault(f => f.Name == MainFeatureName);
-            Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
-            Load(Technologies, TechnologyList);
         }
         protected override void OnSaving() {
             FeatureList = Save(Features);
             ResourceList = Save(Resources);
-            AgentList = Save(Agents);
-            TechnologyList = Save(Technologies);
             base.OnSaving();
         }
         private IObjectSpace objectSpace;
@@ -231,6 +172,121 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
+        #endregion
+    }
+
+
+    [DevExpress.ExpressApp.DC.XafDefaultProperty(nameof(Name))]
+    [DefaultClassOptions]
+    public class Epoch : BaseObject, IObjectSpaceLink {
+        public Epoch(Session session) : base(session) { }
+
+        private string _Name;
+        public string Name {
+            get { return _Name; }
+            set { SetPropertyValue<string>(nameof(Name), ref _Name, value); }
+        }
+
+        #region Agents
+        private BindingList<Agent> _Agents;
+        [Aggregated]
+        public BindingList<Agent> Agents {
+            get {
+                if(_Agents == null) {
+                    _Agents = new BindingList<Agent>();
+                    _Agents.ListChanged += _Agents_ListChanged;
+                }
+                return _Agents;
+            }
+        }
+        private void _Agents_ListChanged(object sender, ListChangedEventArgs e) {
+            var list = (BindingList<Agent>)sender;
+            if(e.ListChangedType == ListChangedType.ItemAdded) {
+                list[e.NewIndex].ID = ++Agent.Sequence;
+            }
+            AgentList = Save(Agents);
+        }
+        private string _AgentList;
+        [Browsable(false)]
+        [Size(SizeAttribute.Unlimited)]
+        public string AgentList {
+            get { return _AgentList; }
+            set { SetPropertyValue<string>(nameof(AgentList), ref _AgentList, value); }
+        }
+        #endregion
+
+        #region Technologies
+        private BindingList<Technology> _Technologies;
+        public BindingList<Technology> Technologies {
+            get {
+                if(_Technologies == null) {
+                    _Technologies = new BindingList<Technology>();
+                }
+                return _Technologies;
+            }
+        }
+        private string _TechnologyList;
+        [Browsable(false)]
+        [Size(SizeAttribute.Unlimited)]
+        public string TechnologyList {
+            get { return _TechnologyList; }
+            set { SetPropertyValue<string>(nameof(TechnologyList), ref _TechnologyList, value); }
+        }
+        #endregion
+
+        protected override void OnLoaded() {
+            base.OnLoaded();
+            Load(Agents, AgentList, o => { o.ID = ++Agent.Sequence; });
+            Load(Technologies, TechnologyList);
+        }
+        protected override void OnSaving() {
+            AgentList = Save(Agents);
+            TechnologyList = Save(Technologies);
+            base.OnSaving();
+        }
+        private IObjectSpace objectSpace;
+        protected IObjectSpace ObjectSpace { get { return objectSpace; } }
+        IObjectSpace IObjectSpaceLink.ObjectSpace {
+            get { return objectSpace; }
+            set {
+                if(objectSpace != value) {
+                    objectSpace = value;
+                }
+            }
+        }
+
+        #region NP Serialization
+        private void Load<T>(BindingList<T> list, string data, Action<T> acceptor) {
+            list.RaiseListChangedEvents = false;
+            list.Clear();
+            if(data != null) {
+                var serializer = new XmlSerializer(typeof(T).MakeArrayType());
+                using(var stream = new MemoryStream(Encoding.UTF8.GetBytes(data))) {
+                    var objs = serializer.Deserialize(stream) as IList<T>;
+                    foreach(var obj in objs) {
+                        acceptor?.Invoke(obj);
+                        var tobj = ObjectSpace.GetObject(obj);
+                        var aobj = tobj as IAssignable<T>;
+                        if(aobj != null) {
+                            aobj.Assign(obj); // always?
+                        }
+                        list.Add(tobj);
+                    }
+                }
+            }
+            list.RaiseListChangedEvents = true;
+            list.ResetBindings();
+        }
+        private string Save<T>(IList<T> list) {
+            if(list == null || list.Count == 0) {
+                return null;
+            }
+            var serializer = new XmlSerializer(typeof(T).MakeArrayType());
+            using(var stream = new MemoryStream()) {
+                serializer.Serialize(stream, list.ToArray());
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+        }
         private void Load(IList<Technology> list, string data) {
             list.Clear();
             if(data != null) {
@@ -253,5 +309,4 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         #endregion
     }
-
 }
