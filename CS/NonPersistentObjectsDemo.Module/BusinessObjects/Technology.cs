@@ -51,19 +51,21 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             obj.Assign(objData);
             return obj;
         }
-        protected override void SaveObject(Technology obj) {
-            Technology objData;
-            if(ObjectSpace.IsDeletedObject(obj)) {
-                storage.Remove(obj.Oid);
-            }
-            else if(ObjectSpace.IsNewObject(obj)) {
-                objData = new Technology(obj.Oid);
-                objData.Assign(obj);
-                storage.Add(obj.Oid, objData);
-            }
-            else {
-                objData = LoadData(obj.Oid);
-                objData.Assign(obj);
+        protected override void CommitChanges(List<Technology> objects) {
+            foreach(var obj in objects) {
+                Technology objData;
+                if(ObjectSpace.IsDeletedObject(obj)) {
+                    storage.Remove(obj.Oid);
+                }
+                else if(ObjectSpace.IsNewObject(obj)) {
+                    objData = new Technology(obj.Oid);
+                    objData.Assign(obj);
+                    storage.Add(obj.Oid, objData);
+                }
+                else {
+                    objData = LoadData(obj.Oid);
+                    objData.Assign(obj);
+                }
             }
         }
         private Technology LoadData(Guid key) {

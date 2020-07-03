@@ -16,7 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         void Assign(T source);
     }
 
-    public abstract class NonPersistentObjectAdapter<TObject, TKey> {
+    public abstract class NonPersistentObjectAdapter<TObject, TKey> where TObject : IObjectSpaceLink {
         private NonPersistentObjectSpace objectSpace;
         private Dictionary<TKey, TObject> objectMap;
         protected NonPersistentObjectSpace ObjectSpace { get { return objectSpace; } }
@@ -81,30 +81,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private void ObjectSpace_Reloaded(object sender, EventArgs e) {
             objectMap.Clear();
         }
-        protected virtual bool ThrowOnAcceptingMismatchedObject { get { return false; } }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            var link = e.SourceObject as IObjectSpaceLink;
             if(e.SourceObject is TObject) {
+                var link = (IObjectSpaceLink)e.SourceObject;
                 var obj = (TObject)e.SourceObject;
                 GuardKeyNotEmpty(obj);
                 if(link.ObjectSpace == null) {
-                    TObject result;
-                    if(!objectMap.TryGetValue(GetKeyValue(obj), out result)) {
-                        objectMap.Add(GetKeyValue(obj), obj);
-                        e.TargetObject = obj;
-                    }
-                    else {
-                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
-                        // then refresh contents of the found object and return it.
-                        if(!Object.Equals(result, obj)) {
-                            if(ThrowOnAcceptingMismatchedObject)
-                                throw new InvalidOperationException();
-                            if(result is IAssignable<TObject> a) {
-                                a.Assign(obj);
-                            }
-                        }
-                        e.TargetObject = result;
-                    }
+                    e.TargetObject = AcceptOrUpdate(obj);
                 }
                 else {
                     if(link.ObjectSpace.IsNewObject(obj)) {
@@ -117,23 +100,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     }
                     else {
                         if(link.ObjectSpace == objectSpace) {
-                            TObject result;
-                            if(!objectMap.TryGetValue(GetKeyValue(obj), out result)) {
-                                objectMap.Add(GetKeyValue(obj), obj);
-                                e.TargetObject = obj;
-                            }
-                            else {
-                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
-                                // then refresh contents of the found object and return it.
-                                if(!Object.Equals(result, obj)) {
-                                    if(ThrowOnAcceptingMismatchedObject)
-                                        throw new InvalidOperationException();
-                                    if(result is IAssignable<TObject> a) {
-                                        a.Assign(obj);
-                                    }
-                                }
-                                e.TargetObject = result;
-                            }
+                            e.TargetObject = AcceptOrUpdate(obj);
                         }
                         else {
                             TObject result;
@@ -149,6 +116,27 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
             }
         }
+        protected virtual bool ThrowOnAcceptingMismatchedObject { get { return false; } }
+        private TObject AcceptOrUpdate(TObject obj) {
+            var key = GetKeyValue(obj);
+            TObject result;
+            if(!objectMap.TryGetValue(key, out result)) {
+                objectMap.Add(key, obj);
+                result = obj;
+            }
+            else {
+                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
+                // then refresh contents of the found object and return it.
+                if(!Object.Equals(result, obj)) {
+                    if(ThrowOnAcceptingMismatchedObject)
+                        throw new InvalidOperationException();
+                    if(result is IAssignable<TObject> a) {
+                        a.Assign(obj);
+                    }
+                }
+            }
+            return result;
+        }
         protected virtual TObject LoadSameObject(TObject obj) {
             return LoadObjectByKey(GetKeyValue(obj));
         }
@@ -162,14 +150,17 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             return obj;
         }
         private void ObjectSpace_CustomCommitChanges(object sender, HandledEventArgs e) {
+            var list = new List<TObject>();
             foreach(var obj in objectSpace.ModifiedObjects) {
                 if(obj is TObject) {
-                    var tobj = (TObject)obj;
-                    SaveObject(tobj);
+                    list.Add((TObject)obj);
                 }
             }
+            if(list.Count > 0) {
+                CommitChanges(list);
+            }
         }
-        protected virtual void SaveObject(TObject tobj) {
+        protected virtual void CommitChanges(List<TObject> objects) {
         }
     }
 
