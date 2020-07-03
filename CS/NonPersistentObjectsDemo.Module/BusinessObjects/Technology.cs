@@ -31,147 +31,47 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
-    class NPTechnologyAdapter {
-        private NonPersistentObjectSpace objectSpace;
-        private Dictionary<Guid, Technology> objectMap;
-
+    class NPTechnologyAdapter : NonPersistentObjectAdapter<Technology, Guid> {
         private static Dictionary<Guid, Technology> storage;
-
         static NPTechnologyAdapter() {
             storage = new Dictionary<Guid, Technology>();
         }
-
-        public NPTechnologyAdapter(NonPersistentObjectSpace npos) {
-            this.objectSpace = npos;
-            objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
-            objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
-            objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
-            objectSpace.Reloaded += ObjectSpace_Reloaded;
-            objectSpace.ObjectReloading += ObjectSpace_ObjectReloading;
-            objectSpace.CustomCommitChanges += ObjectSpace_CustomCommitChanges;
-            objectMap = new Dictionary<Guid, Technology>();
-        }
-        private void AcceptObject(Technology obj) {
-            Technology result;
-            if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                objectMap.Add(obj.Oid, obj);
-            }
-            else {
-                if(result != obj) {
-                    throw new InvalidOperationException();
-                }
-            }
-        }
-        private Technology GetObject(Guid key) {
-            Technology result;
-            if(!objectMap.TryGetValue(key, out result)) {
-                Technology objData;
-                if(storage.TryGetValue(key, out objData)) {
-                    result = new Technology(key);
-                    result.Assign(objData);
-                    AcceptObject(result);
-                }
+        public NPTechnologyAdapter(NonPersistentObjectSpace npos) : base(npos) { }
+        protected override Technology LoadObjectByKey(Guid key) {
+            Technology result = null;
+            Technology objData;
+            if(storage.TryGetValue(key, out objData)) {
+                result = new Technology(key);
+                result.Assign(objData);
             }
             return result;
         }
-        private void ObjectSpace_ObjectByKeyGetting(object sender, ObjectByKeyGettingEventArgs e) {
-            if(e.Key != null) {
-                if(e.ObjectType == typeof(Technology)) {
-                    e.Object = GetObject((Guid)e.Key);
-                }
+        protected override Technology ReloadObject(Technology obj) {
+            Technology objData = LoadData(obj.Oid);
+            obj.Assign(objData);
+            return obj;
+        }
+        protected override void SaveObject(Technology obj) {
+            Technology objData;
+            if(ObjectSpace.IsDeletedObject(obj)) {
+                storage.Remove(obj.Oid);
+            }
+            else if(ObjectSpace.IsNewObject(obj)) {
+                objData = new Technology(obj.Oid);
+                objData.Assign(obj);
+                storage.Add(obj.Oid, objData);
+            }
+            else {
+                objData = LoadData(obj.Oid);
+                objData.Assign(obj);
             }
         }
-        private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
-            if(e.ObjectType == typeof(Technology)) {
-                throw new NotSupportedException();
+        private Technology LoadData(Guid key) {
+            Technology objData;
+            if(!storage.TryGetValue(key, out objData)) {
+                throw new InvalidOperationException("Object is not found in the storage.");
             }
-        }
-        private void ObjectSpace_Reloaded(object sender, EventArgs e) {
-            objectMap.Clear();
-        }
-        private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            var link = e.SourceObject as IObjectSpaceLink;
-            if(e.SourceObject is Technology) {
-                var obj = (Technology)e.SourceObject;
-                if(link.ObjectSpace == null) {
-                    Technology result;
-                    if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                        objectMap.Add(obj.Oid, obj);
-                        e.TargetObject = obj;
-                    }
-                    else {
-                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
-                        // then refresh contents of the found object and return it.
-                        if(result != obj) {
-                            result.Assign(obj);
-                        }
-                        e.TargetObject = result;
-                    }
-                }
-                else {
-                    if(link.ObjectSpace.IsNewObject(obj)) {
-                        if(link.ObjectSpace == objectSpace) {
-                            e.TargetObject = e.SourceObject;
-                        }
-                        else {
-                            e.TargetObject = null;
-                        }
-                    }
-                    else {
-                        if(link.ObjectSpace == objectSpace) {
-                            Technology result;
-                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                                objectMap.Add(obj.Oid, obj);
-                                e.TargetObject = obj;
-                            }
-                            else {
-                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
-                                // then refresh contents of the found object and return it.
-                                if(result != obj) {
-                                    result.Assign(obj);
-                                }
-                                e.TargetObject = result;
-                            }
-                        }
-                        else {
-                            e.TargetObject = GetObject(obj.Oid);
-                        }
-                    }
-                }
-            }
-        }
-        private void ObjectSpace_ObjectReloading(object sender, ObjectGettingEventArgs e) {
-            if(e.SourceObject is Technology) {
-                var tobj = (Technology)e.SourceObject;
-                Technology objData;
-                if(!storage.TryGetValue(tobj.Oid, out objData)) {
-                    throw new InvalidOperationException("Object is not found in the storage.");
-                }
-                tobj.Assign(objData);
-                e.TargetObject = tobj;
-            }
-        }
-        private void ObjectSpace_CustomCommitChanges(object sender, HandledEventArgs e) {
-            foreach(var obj in objectSpace.ModifiedObjects) {
-                if(obj is Technology) {
-                    var tobj = (Technology)obj;
-                    Technology objData;
-                    if(objectSpace.IsDeletedObject(obj)) {
-                        storage.Remove(tobj.Oid);
-                    }
-                    else if(objectSpace.IsNewObject(obj)) {
-                        objData = new Technology(tobj.Oid);
-                        objData.Assign(tobj);
-                        storage.Add(tobj.Oid, objData);
-                    }
-                    else {
-                        if(!storage.TryGetValue(tobj.Oid, out objData)) {
-                            throw new InvalidOperationException("Object is not found in the storage.");
-                        }
-                        objData.Assign(tobj);
-                    }
-                }
-            }
+            return objData;
         }
     }
 }

@@ -53,137 +53,37 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
-    class NPResourceAdapter {
-        private NonPersistentObjectSpace objectSpace;
-        private Dictionary<Guid, Resource> objectMap;
-
-        public NPResourceAdapter(NonPersistentObjectSpace npos) {
-            this.objectSpace = npos;
-            objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
-            objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
-            objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
-            objectSpace.Reloaded += ObjectSpace_Reloaded;
-            objectMap = new Dictionary<Guid, Resource>();
-        }
-        void GuardKeyNotEmpty(Resource obj) {
+    class NPResourceAdapter : NonPersistentObjectAdapter<Resource, Guid> {
+        public NPResourceAdapter(NonPersistentObjectSpace npos) : base(npos) { }
+        protected override void GuardKeyNotEmpty(Resource obj) {
             if(obj.OwnerKey == Guid.Empty)
                 throw new InvalidOperationException(); // DEBUG
             if(obj.Oid == Guid.Empty)
                 throw new InvalidOperationException(); // DEBUG
         }
-        private void AcceptObject(Resource obj) {
+        protected override Resource LoadSameObject(Resource obj) {
             Resource result;
-            GuardKeyNotEmpty(obj);
-            if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                objectMap.Add(obj.Oid, obj);
-            }
-            else {
-                if(result != obj) {
-                    throw new InvalidOperationException();
-                }
-            }
-        }
-        private Resource GetObject(Guid key) {
-            Resource result;
-            if(!objectMap.TryGetValue(key, out result)) {
-                throw new NotSupportedException();
+            var owner = GetOwnerByKey(obj.OwnerKey);
+            result = GetFromOwner(owner, obj.Oid);
+            if(result == null) {
+                owner = ReloadOwner(owner);
+                result = GetFromOwner(owner, obj.Oid);
             }
             return result;
-        }
-        private Project GetOwnerByKey(Guid key) {
-            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
-            return (ownerObjectSpace ?? objectSpace).GetObjectByKey<Project>(key);
-        }
-        private Project ReloadOwner(Project owner) {
-            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
-            return (Project)(ownerObjectSpace ?? objectSpace).ReloadObject(owner);
-        }
-        private void ObjectSpace_ObjectByKeyGetting(object sender, ObjectByKeyGettingEventArgs e) {
-            if(e.Key != null) {
-                if(e.ObjectType == typeof(Resource)) {
-                    e.Object = GetObject((Guid)e.Key);
-                }
-            }
-        }
-        private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
-            if(e.ObjectType == typeof(Resource)) {
-                throw new NotSupportedException();
-            }
-        }
-        private void ObjectSpace_Reloaded(object sender, EventArgs e) {
-            objectMap.Clear();
-        }
-        private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            var link = e.SourceObject as IObjectSpaceLink;
-            if(e.SourceObject is Resource) {
-                var obj = (Resource)e.SourceObject;
-                GuardKeyNotEmpty(obj);
-                if(link.ObjectSpace == null) {
-                    //AcceptObject(obj);
-                    Resource result;
-                    if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                        objectMap.Add(obj.Oid, obj);
-                        e.TargetObject = obj;
-                    }
-                    else {
-                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
-                        // then refresh contents of the found object and return it.
-                        if(result != obj) {
-                            result.Assign(obj);
-                        }
-                        e.TargetObject = result;
-                    }
-                }
-                else {
-                    if(link.ObjectSpace.IsNewObject(obj)) {
-                        if(link.ObjectSpace == objectSpace) {
-                            e.TargetObject = e.SourceObject;
-                        }
-                        else {
-                            e.TargetObject = null;
-                        }
-                    }
-                    else {
-                        if(link.ObjectSpace == objectSpace) {
-                            //AcceptObject(obj);
-                            Resource result;
-                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                                objectMap.Add(obj.Oid, obj);
-                                e.TargetObject = obj;
-                            }
-                            else {
-                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
-                                // then refresh contents of the found object and return it.
-                                if(result != obj) {
-                                    result.Assign(obj);
-                                }
-                                e.TargetObject = result;
-                            }
-                        }
-                        else {
-                            Resource result;
-                            if(!objectMap.TryGetValue(obj.Oid, out result)) {
-                                var owner = GetOwnerByKey(obj.OwnerKey);
-                                result = GetFromOwner(owner, obj.Oid);
-                                if(result == null) {
-                                    owner = ReloadOwner(owner);
-                                    result = GetFromOwner(owner, obj.Oid);
-                                }
-                                if(result != null) {
-                                    AcceptObject(result);
-                                }
-                            }
-                            e.TargetObject = result;
-                        }
-                    }
-                }
-            }
         }
         private Resource GetFromOwner(Project owner, Guid localKey) {
             if(owner == null) {
                 throw new InvalidOperationException("Owner object is not found in the storage.");
             }
             return owner.Resources.FirstOrDefault(o => o.Oid == localKey);
+        }
+        private Project GetOwnerByKey(Guid key) {
+            var ownerObjectSpace = ObjectSpace.Owner as CompositeObjectSpace;
+            return (ownerObjectSpace ?? ObjectSpace).GetObjectByKey<Project>(key);
+        }
+        private Project ReloadOwner(Project owner) {
+            var ownerObjectSpace = ObjectSpace.Owner as CompositeObjectSpace;
+            return (Project)(ownerObjectSpace ?? ObjectSpace).ReloadObject(owner);
         }
     }
 }

@@ -43,56 +43,29 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             LocalKey = source.LocalKey;
             Name = source.Name;
             Progress = source.Progress;
-    }
-    }
-
-    class NPFeatureAdapter {
-        private NonPersistentObjectSpace objectSpace;
-        private Dictionary<string, Feature> objectMap;
-
-        public NPFeatureAdapter(NonPersistentObjectSpace npos) {
-            this.objectSpace = npos;
-            objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
-            objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
-            objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
-            objectSpace.Reloaded += ObjectSpace_Reloaded;
-            objectMap = new Dictionary<string, Feature>();
         }
-        void GuardKeyNotEmpty(Feature obj) {
+    }
+
+    class NPFeatureAdapter : NonPersistentObjectAdapter<Feature, string> {
+        public NPFeatureAdapter(NonPersistentObjectSpace npos) : base(npos) { }
+        protected override void GuardKeyNotEmpty(Feature obj) {
             if(obj.OwnerKey == Guid.Empty)
                 throw new InvalidOperationException(); // DEBUG
             if(obj.LocalKey == 0)
                 throw new InvalidOperationException(); // DEBUG
         }
-        private void AcceptObject(Feature obj) {
+        protected override Feature LoadObjectByKey(string key) {
             Feature result;
-            GuardKeyNotEmpty(obj);
-            if(!objectMap.TryGetValue(obj.ID, out result)) {
-                objectMap.Add(obj.ID, obj);
+            Guid ownerKey;
+            int localKey;
+            if(!TryParseKey(key, out ownerKey, out localKey)) {
+                throw new InvalidOperationException("Invalid key.");
             }
-            else {
-                if(result != obj) {
-                    throw new InvalidOperationException();
-                }
-            }
-        }
-        private Feature GetObject(string key) {
-            Feature result;
-            if(!objectMap.TryGetValue(key, out result)) {
-                Guid ownerKey;
-                int localKey;
-                if(!TryParseKey(key, out ownerKey, out localKey)) {
-                    throw new InvalidOperationException("Invalid key.");
-                }
-                var owner = GetOwnerByKey(ownerKey);
+            var owner = GetOwnerByKey(ownerKey);
+            result = GetFromOwner(owner, localKey);
+            if(result == null) {
+                owner = ReloadOwner(owner);
                 result = GetFromOwner(owner, localKey);
-                if(result == null) {
-                    owner = ReloadOwner(owner);
-                    result = GetFromOwner(owner, localKey);
-                }
-                if(result != null) {
-                    AcceptObject(result);
-                }
             }
             return result;
         }
@@ -103,15 +76,15 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             return owner.Features.FirstOrDefault(o => o.LocalKey == localKey);
         }
         private Project GetOwnerByKey(Guid key) {
-            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
-            return (ownerObjectSpace ?? objectSpace).GetObjectByKey<Project>(key);
+            var ownerObjectSpace = ObjectSpace.Owner as CompositeObjectSpace;
+            return (ownerObjectSpace ?? ObjectSpace).GetObjectByKey<Project>(key);
         }
         private Project ReloadOwner(Project owner) {
-            var ownerObjectSpace = objectSpace.Owner as CompositeObjectSpace;
+            var ownerObjectSpace = ObjectSpace.Owner as CompositeObjectSpace;
             if(ownerObjectSpace.ModifiedObjects.Contains(owner)) {
                 throw new NotSupportedException();
             }
-            return (Project)(ownerObjectSpace ?? objectSpace).ReloadObject(owner);
+            return (Project)(ownerObjectSpace ?? ObjectSpace).ReloadObject(owner);
         }
         private bool TryParseKey(string key, out Guid ownerKey, out int localKey) {
             ownerKey = Guid.Empty;
@@ -130,73 +103,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 return false;
             }
             return true;
-        }
-        private void ObjectSpace_ObjectByKeyGetting(object sender, ObjectByKeyGettingEventArgs e) {
-            if(e.Key != null) {
-                if(e.ObjectType == typeof(Feature)) {
-                    e.Object = GetObject((string)e.Key);
-                }
-            }
-        }
-        private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
-            if(e.ObjectType == typeof(Feature)) {
-                throw new NotSupportedException();
-            }
-        }
-        private void ObjectSpace_Reloaded(object sender, EventArgs e) {
-            objectMap.Clear();
-        }
-        private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            var link = e.SourceObject as IObjectSpaceLink;
-            if(e.SourceObject is Feature) {
-                var obj = (Feature)e.SourceObject;
-                GuardKeyNotEmpty(obj);
-                if(link.ObjectSpace == null) {
-                    Feature result;
-                    if(!objectMap.TryGetValue(obj.ID, out result)) {
-                        objectMap.Add(obj.ID, obj);
-                        e.TargetObject = obj;
-                    }
-                    else {
-                        // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy. (because link is null yet)
-                        // then refresh contents of the found object and return it.
-                        if(result != obj) {
-                            result.Assign(obj);
-                        }
-                        e.TargetObject = result;
-                    }
-                }
-                else {
-                    if(link.ObjectSpace.IsNewObject(obj)) {
-                        if(link.ObjectSpace == objectSpace) {
-                            e.TargetObject = e.SourceObject;
-                        }
-                        else {
-                            e.TargetObject = null;
-                        }
-                    }
-                    else {
-                        if(link.ObjectSpace == objectSpace) {
-                            Feature result;
-                            if(!objectMap.TryGetValue(obj.ID, out result)) {
-                                objectMap.Add(obj.ID, obj);
-                                e.TargetObject = obj;
-                            }
-                            else {
-                                // if objectMap contains an object with the same key, assume SourceObject is a reloaded copy.
-                                // then refresh contents of the found object and return it.
-                                if(result != obj) {
-                                    result.Assign(obj);
-                                }
-                                e.TargetObject = result;
-                            }
-                        }
-                        else {
-                            e.TargetObject = GetObject(obj.ID);
-                        }
-                    }
-                }
-            }
         }
     }
 }
