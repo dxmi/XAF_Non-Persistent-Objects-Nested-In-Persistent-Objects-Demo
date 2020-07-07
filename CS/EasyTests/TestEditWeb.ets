@@ -3,17 +3,6 @@
 *Action Navigation(Default.Project)
 *ProcessRecord 
  Code Name = Project X
-*OptionalAction Edit
-*FillForm
- Group = XHD
-*Action Save
-*OptionalAction Close
-
-*Action Navigation(Default.Project)
-*ProcessRecord 
- Code Name = Project X
-*CheckFieldValues
- Group = XHD
 
 ;; fill data
 *OptionalAction Edit
