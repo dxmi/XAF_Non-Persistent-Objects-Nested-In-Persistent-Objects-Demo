@@ -42,4 +42,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         protected override bool ThrowOnAcceptingMismatchedObject => true;
     }
+
+    /*
+     * Also, see the overridden GetObjectSpaceToShowDetailViewFrom method
+     * in the XafApplication (WinApplication / WebApplication) descendant.
+     * 
+     */
 }

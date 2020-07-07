@@ -32,4 +32,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             return pos.GetObjectsQuery<Project>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
         }
     }
+
+    /*
+     * Also, see the overridden GetObjectSpaceToShowDetailViewFrom method
+     * in the WebApplication descendant.
+     * 
+     */
 }

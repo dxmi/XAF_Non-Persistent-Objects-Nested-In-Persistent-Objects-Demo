@@ -23,6 +23,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
                 CreateProjects();
                 CreateEpochs();
+                CreateDepartments();
             }
         }
         private void CreateProjects() {
@@ -50,8 +51,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             var e1 = CreateEpoch("Stone Age");
             var e2 = CreateEpoch("Nowadays");
             var e3 = CreateEpoch("Future");
-            e2.Agents.Add(new Agent() { Name = "Agent X", Progress = 80 });
-            e2.Agents.Add(new Agent() { Name = "Agent Orange", Progress = 0 });
             e2.Technologies.Add(t1);
             e2.Technologies.Add(t2);
             e2.Technologies.Add(t3);
@@ -66,6 +65,18 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             tech.Name = name;
             tech.Description = description;
             return tech;
+        }
+        private void CreateDepartments() {
+            var e1 = CreateDepartment("Sales");
+            var e2 = CreateDepartment("Research");
+            var e3 = CreateDepartment("Communications");
+            e2.Agents.Add(new Agent() { Name = "Agent X", Progress = 80 });
+            e2.Agents.Add(new Agent() { Name = "Agent Orange", Progress = 0 });
+        }
+        private Department CreateDepartment(string name) {
+            var obj = ObjectSpace.CreateObject<Department>();
+            obj.Name = name;
+            return obj;
         }
     }
 }
