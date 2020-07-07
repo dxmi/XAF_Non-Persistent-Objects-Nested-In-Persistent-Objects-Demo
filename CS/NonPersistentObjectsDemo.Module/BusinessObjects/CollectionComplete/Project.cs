@@ -24,17 +24,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             get { return _CodeName; }
             set { SetPropertyValue<string>(nameof(CodeName), ref _CodeName, value); }
         }
-        private Group _Group;
-        public Group Group {
-            get { return _Group; }
-            set { SetPropertyValue<Group>(nameof(Group), ref _Group, value); }
-        }
-        private string _GroupName;
-        [Browsable(false)]
-        public string GroupName {
-            get { return _GroupName; }
-            set { SetPropertyValue<string>(nameof(GroupName), ref _GroupName, value); }
-        }
 
         #region Features
         private BindingList<Feature> _Features;
@@ -109,16 +98,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
         protected override void OnChanged(string propertyName, object oldValue, object newValue) {
             base.OnChanged(propertyName, oldValue, newValue);
-            if(propertyName == nameof(Group)) {
-                GroupName = (newValue as Group)?.Name;
-            }
-            else if(propertyName == nameof(MainFeature)) {
+            if(propertyName == nameof(MainFeature)) {
                 MainFeatureName = (newValue as Feature)?.Name;
             }
         }
         protected override void OnLoaded() {
             base.OnLoaded();
-            _Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
             int counter = 0;
             Load(Features, FeatureList, o => { o.OwnerKey = this.Oid; o.LocalKey = ++counter; });
             Load(Resources, ResourceList, o => { o.OwnerKey = this.Oid; });

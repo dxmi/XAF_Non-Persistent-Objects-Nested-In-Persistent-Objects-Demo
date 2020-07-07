@@ -29,7 +29,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         protected override IList<Group> GetObjects() {
             var pos = ObjectSpace.Owner as IObjectSpace;
-            return pos.GetObjectsQuery<Project>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
+            return pos.GetObjectsQuery<Product>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
         }
     }
 

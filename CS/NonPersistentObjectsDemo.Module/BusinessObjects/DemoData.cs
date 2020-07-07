@@ -22,25 +22,36 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     new NPTechnologyAdapter(npos);
                 }
                 CreateProjects();
+                CreateProducts();
                 CreateEpochs();
                 CreateDepartments();
             }
         }
         private void CreateProjects() {
-            var p1 = CreateProject("Project X", "B");
-            var p2 = CreateProject("Project Y", "B");
+            var p1 = CreateProject("Project X");
+            var p2 = CreateProject("Project Y");
             p2.Features.Add(new Feature() { Name = "Feature 1", Progress = 3.5 });
             p2.Features.Add(new Feature() { Name = "Feature 2", Progress = 0 });
             p2.Features.Add(new Feature() { Name = "Feature 3", Progress = 1 });
             p2.Resources.Add(new Resource() { Name = "Resource A", URI = "a", Embed = true });
             p2.Resources.Add(new Resource() { Name = "Resource B", URI = "b", Priority = 2 });
             p2.Resources.Add(new Resource() { Name = "Resource C", URI = "c", Priority = 1 });
-            var p3 = CreateProject("Project Z", "AAA");
-            var p4 = CreateProject("Project Unknown", "XHD");
+            var p3 = CreateProject("Project Z");
         }
-        private Project CreateProject(string name, string group) {
+        private Project CreateProject(string name) {
             var project = ObjectSpace.CreateObject<Project>();
             project.CodeName = name;
+            return project;
+        }
+        private void CreateProducts() {
+            var p1 = CreateProduct("Product 1", "B");
+            var p2 = CreateProduct("Product 2", "B");
+            var p4 = CreateProduct("Product 3", "XHD");
+            var p3 = CreateProduct("Product 4", "AAA");
+        }
+        private Product CreateProduct(string name, string group) {
+            var project = ObjectSpace.CreateObject<Product>();
+            project.Name = name;
             project.Group = new Group() { Name = group };
             return project;
         }
