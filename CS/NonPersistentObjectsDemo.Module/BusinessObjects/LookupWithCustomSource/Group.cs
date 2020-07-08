@@ -27,15 +27,13 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         protected override Group LoadObjectByKey(string key) {
             return new Group() { Name = key };
         }
+        private List<Group> objects;
         protected override IList<Group> GetObjects() {
-            var pos = ObjectSpace.Owner as IObjectSpace;
-            return pos.GetObjectsQuery<Product>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
+            if(objects == null) {
+                var pos = ObjectSpace.Owner as IObjectSpace;
+                objects = pos.GetObjectsQuery<Product>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
+            }
+            return objects;
         }
     }
-
-    /*
-     * Also, see the overridden GetObjectSpaceToShowDetailViewFrom method
-     * in the WebApplication descendant.
-     * 
-     */
 }

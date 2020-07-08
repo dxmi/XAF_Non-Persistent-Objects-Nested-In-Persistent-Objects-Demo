@@ -143,8 +143,8 @@
     <Compile Include="BusinessObjects\CollectionStoredSeparately\Epoch.cs" />
     <Compile Include="BusinessObjects\DemoData.cs" />
     <Compile Include="BusinessObjects\CollectionComplete\Feature.cs" />
-    <Compile Include="BusinessObjects\LookupWithCustom Source\Group.cs" />
-    <Compile Include="BusinessObjects\LookupWithCustom Source\Product.cs" />
+    <Compile Include="BusinessObjects\LookupWithCustomSource\Group.cs" />
+    <Compile Include="BusinessObjects\LookupWithCustomSource\Product.cs" />
     <Compile Include="BusinessObjects\NonPersistentObjectAdapter.cs" />
     <Compile Include="BusinessObjects\CollectionComplete\Resource.cs" />
     <Compile Include="BusinessObjects\CollectionStoredSeparately\Technology.cs" />
