@@ -16,7 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DevExpress.ExpressApp.DC.XafDefaultProperty(nameof(Name))]
     [DefaultClassOptions]
-    public class Product : BaseObject, IObjectSpaceLink {
+    public class Product : BaseObject {
         public Product(Session session) : base(session) { }
 
         private string _Name;
@@ -44,17 +44,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         protected override void OnLoaded() {
             base.OnLoaded();
-            _Group = GroupName == null ? null : ObjectSpace.GetObject(new Group() { Name = GroupName });
-        }
-        private IObjectSpace objectSpace;
-        protected IObjectSpace ObjectSpace { get { return objectSpace; } }
-        IObjectSpace IObjectSpaceLink.ObjectSpace {
-            get { return objectSpace; }
-            set {
-                if(objectSpace != value) {
-                    objectSpace = value;
-                }
-            }
+            _Group = GroupName == null ? null : new Group() { Name = GroupName };
         }
     }
 }

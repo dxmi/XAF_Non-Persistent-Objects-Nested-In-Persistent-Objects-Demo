@@ -11,29 +11,38 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DomainComponent]
     [DefaultProperty(nameof(Name))]
-    public class Group : NonPersistentObjectImpl {
-        private string _Name;
+    public class Group {
         [DevExpress.ExpressApp.Data.Key]
-        public string Name {
-            get { return _Name; }
-            set { SetPropertyValue<string>(ref _Name, value); }
-        }
+        public string Name { get; set; }
     }
 
-    class NPGroupAdapter : NonPersistentObjectAdapter<Group, string> {
-        public NPGroupAdapter(NonPersistentObjectSpace npos) : base(npos) { }
-        protected override void GuardKeyNotEmpty(Group obj) {
+    class NPGroupAdapter {
+        private NonPersistentObjectSpace objectSpace;
+        protected NonPersistentObjectSpace ObjectSpace { get { return objectSpace; } }
+        private List<Group> objects;
+        public NPGroupAdapter(NonPersistentObjectSpace npos) {
+            this.objectSpace = npos;
+            objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
+            objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
         }
-        protected override Group LoadObjectByKey(string key) {
+        protected Group GetObjectByKey(string key) {
             return new Group() { Name = key };
         }
-        private List<Group> objects;
-        protected override IList<Group> GetObjects() {
-            if(objects == null) {
-                var pos = ObjectSpace.Owner as IObjectSpace;
-                objects = pos.GetObjectsQuery<Product>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
+        private void ObjectSpace_ObjectByKeyGetting(object sender, ObjectByKeyGettingEventArgs e) {
+            if(e.Key != null) {
+                if(e.ObjectType == typeof(Group)) {
+                    e.Object = GetObjectByKey((string)e.Key);
+                }
             }
-            return objects;
+        }
+        private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
+            if(e.ObjectType == typeof(Group)) {
+                if(objects == null) {
+                    var pos = ObjectSpace.Owner as IObjectSpace;
+                    objects = pos.GetObjectsQuery<Product>().Where(o => o.GroupName != null).GroupBy(o => o.GroupName).Select(o => GetObjectByKey(o.Key)).ToList();
+                }
+                e.Objects = objects;
+            }
         }
     }
 }
