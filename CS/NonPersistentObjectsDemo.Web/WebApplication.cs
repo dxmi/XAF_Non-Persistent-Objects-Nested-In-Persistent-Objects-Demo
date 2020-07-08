@@ -102,11 +102,6 @@ namespace NonPersistentObjectsDemo.Web {
                 objectType == typeof(Module.BusinessObjects.Agent)) {
                 return sourceFrame.View.ObjectSpace;
             }
-            if(sourceFrame.View is ListView &&
-                sourceFrame.View.ObjectTypeInfo.Type == typeof(Module.BusinessObjects.Group) &&
-                objectType == typeof(Module.BusinessObjects.Group)) {
-                return sourceFrame.View.ObjectSpace;
-            }
             return base.GetObjectSpaceToShowDetailViewFrom(sourceFrame, objectType, targetWindow);
         }
         private void InitializeComponent() {

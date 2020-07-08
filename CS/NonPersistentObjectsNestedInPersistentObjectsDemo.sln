@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EasyTests", "EasyTests", "{
 		EasyTests\TestCreateDeleteWeb.ets = EasyTests\TestCreateDeleteWeb.ets
 		EasyTests\TestEditWin.ets = EasyTests\TestEditWin.ets
 		EasyTests\TestEditWeb.ets = EasyTests\TestEditWeb.ets
+		EasyTests\TestLookupWin.ets = EasyTests\TestLookupWin.ets
+		EasyTests\TestLookupWeb.ets = EasyTests\TestLookupWeb.ets
 	EndProjectSection
 EndProject
 Global

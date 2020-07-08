@@ -1,34 +1,29 @@
 
 #Application NonPersistentObjectsDemoWeb
 
-*Action Navigation(Default.Project)
-*ClearSelection Project
-*SelectRecords Project
- Columns = Code Name
- Row = Project X
-*Action Edit
-*ExecuteEditorAction Main Feature(New)
-*FillForm
- Name = F10
- Progress = 10
-*Action OK
-
-*CheckFieldValues
- Main Feature = F10
-
-*Action Save
-*Action Navigation(Default.Project)
+*Action Navigation(Default.Product)
 *ProcessRecord 
- Code Name = Project X
+ Name = Product 2
+*OptionalAction Edit
+*FillForm
+ Group = XHD
+*Action Save
+*OptionalAction Close
 
+*Action Navigation(Default.Product)
+*ProcessRecord 
+ Name = Product 2
 *CheckFieldValues
- Main Feature = F10
+ Group = XHD
+*OptionalAction Close
 
-*CheckTable Features
- RowCount = 1
- Columns = Name, Progress
- Row = F10, 10
+;New
 
+*Action Navigation(Default.Product)
+*ClearSelection Product
+*SelectRecords Product
+ Columns = Name
+ Row = Product 2
 *Action Edit
 *ExecuteEditorAction Group(New)
 *FillForm
@@ -39,9 +34,9 @@
  Group = X9000
 
 *Action Save
-*Action Navigation(Default.Project)
+*Action Navigation(Default.Product)
 *ProcessRecord 
- Code Name = Project X
+ Name = Product 2
 
 *CheckFieldValues
  Group = X9000

@@ -4,9 +4,6 @@
 *ProcessRecord 
  Code Name = Project X
 *OptionalAction Edit
-*FillForm
- Group = XHD
-*Action Save
 *Action Features.New
 *FillForm
  Name = Feature1
@@ -24,8 +21,6 @@
 *ProcessRecord 
  Code Name = Project X
 
-*CheckFieldValues
- Group = XHD
 *CheckTable Features
  RowCount = 2
  Columns = Name, Progress

@@ -18,12 +18,6 @@
           <LayoutGroup Id="Resources" ShowCaption="True" Index="2" IsNewNode="True">
             <LayoutItem Id="Resources" ViewItem="Resources" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
           </LayoutGroup>
-          <LayoutGroup Id="Agents" ShowCaption="True" Index="3" IsNewNode="True">
-            <LayoutItem Id="Agents" ViewItem="Agents" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
-          </LayoutGroup>
-          <LayoutGroup Id="Technologies" ShowCaption="True" Index="4" IsNewNode="True">
-            <LayoutItem Id="Technologies" ViewItem="Technologies" ShowCaption="False" Index="0" MinSize="200, 120" SizeConstraintsType="Custom" IsNewNode="True" />
-          </LayoutGroup>
           <TabbedGroup Id="Tabs" Removed="True">
             <LayoutGroup Id="Features" Removed="True" />
             <LayoutGroup Id="Resources" Removed="True" />

@@ -137,14 +137,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusinessObjects\Agent.cs" />
+    <Compile Include="BusinessObjects\CollectionInSameSpace\Agent.cs" />
+    <Compile Include="BusinessObjects\CollectionComplete\Project.cs" />
+    <Compile Include="BusinessObjects\CollectionInSameSpace\Department.cs" />
+    <Compile Include="BusinessObjects\CollectionStoredSeparately\Epoch.cs" />
     <Compile Include="BusinessObjects\DemoData.cs" />
-    <Compile Include="BusinessObjects\Feature.cs" />
-    <Compile Include="BusinessObjects\Group.cs" />
-    <Compile Include="BusinessObjects\NonPersistentObjects.cs" />
-    <Compile Include="BusinessObjects\PersistentObjects.cs" />
-    <Compile Include="BusinessObjects\Resource.cs" />
-    <Compile Include="BusinessObjects\Technology.cs" />
+    <Compile Include="BusinessObjects\CollectionComplete\Feature.cs" />
+    <Compile Include="BusinessObjects\LookupWithCustomSource\Group.cs" />
+    <Compile Include="BusinessObjects\LookupWithCustomSource\Product.cs" />
+    <Compile Include="BusinessObjects\NonPersistentObjectAdapter.cs" />
+    <Compile Include="BusinessObjects\CollectionComplete\Resource.cs" />
+    <Compile Include="BusinessObjects\CollectionStoredSeparately\Technology.cs" />
     <Compile Include="Controllers\MyController.cs" />
     <Compile Include="DatabaseUpdate\Updater.cs" />
     <Compile Include="Module.cs">
@@ -173,6 +176,7 @@
   <ItemGroup>
     <None Include="Welcome.html" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
