@@ -16,7 +16,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         void Assign(T source);
     }
 
-    public abstract class NonPersistentObjectAdapter<TObject, TKey> where TObject : IObjectSpaceLink {
+    public abstract class NonPersistentObjectAdapter<TObject, TKey> {
         private NonPersistentObjectSpace objectSpace;
         private Dictionary<TKey, TObject> objectMap;
         protected NonPersistentObjectSpace ObjectSpace { get { return objectSpace; } }
@@ -83,34 +83,36 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
             if(e.SourceObject is TObject) {
-                var link = (IObjectSpaceLink)e.SourceObject;
                 var obj = (TObject)e.SourceObject;
-                GuardKeyNotEmpty(obj);
-                if(link.ObjectSpace == null) {
-                    e.TargetObject = AcceptOrUpdate(obj);
-                }
-                else {
-                    if(link.ObjectSpace.IsNewObject(obj)) {
-                        if(link.ObjectSpace == objectSpace) {
-                            e.TargetObject = e.SourceObject;
-                        }
-                        else {
-                            e.TargetObject = null;
-                        }
+                var link = e.SourceObject as IObjectSpaceLink;
+                if(link != null) {
+                    GuardKeyNotEmpty(obj);
+                    if(link.ObjectSpace == null) {
+                        e.TargetObject = AcceptOrUpdate(obj);
                     }
                     else {
-                        if(link.ObjectSpace == objectSpace) {
-                            e.TargetObject = AcceptOrUpdate(obj);
+                        if(link.ObjectSpace.IsNewObject(obj)) {
+                            if(link.ObjectSpace == objectSpace) {
+                                e.TargetObject = e.SourceObject;
+                            }
+                            else {
+                                e.TargetObject = null;
+                            }
                         }
                         else {
-                            TObject result;
-                            if(!objectMap.TryGetValue(GetKeyValue(obj), out result)) {
-                                result = LoadSameObject(obj);
-                                if(result != null) {
-                                    AcceptObject(result);
-                                }
+                            if(link.ObjectSpace == objectSpace) {
+                                e.TargetObject = AcceptOrUpdate(obj);
                             }
-                            e.TargetObject = result;
+                            else {
+                                TObject result;
+                                if(!objectMap.TryGetValue(GetKeyValue(obj), out result)) {
+                                    result = LoadSameObject(obj);
+                                    if(result != null) {
+                                        AcceptObject(result);
+                                    }
+                                }
+                                e.TargetObject = result;
+                            }
                         }
                     }
                 }

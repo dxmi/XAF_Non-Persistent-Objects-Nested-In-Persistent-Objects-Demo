@@ -146,7 +146,6 @@
     <Compile Include="BusinessObjects\LookupWithCustom Source\Group.cs" />
     <Compile Include="BusinessObjects\LookupWithCustom Source\Product.cs" />
     <Compile Include="BusinessObjects\NonPersistentObjectAdapter.cs" />
-    <Compile Include="BusinessObjects\PersistentObjects.cs" />
     <Compile Include="BusinessObjects\CollectionComplete\Resource.cs" />
     <Compile Include="BusinessObjects\CollectionStoredSeparately\Technology.cs" />
     <Compile Include="Controllers\MyController.cs" />
